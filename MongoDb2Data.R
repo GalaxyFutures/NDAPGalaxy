@@ -45,9 +45,9 @@ GetBondInfosFromMongo2 = function ()
   cols = list( cols$'_id',cols$Name,cols$issuedate,cols$maturitydate,cols$couponrate,cols$frequency)
   names(cols)= c("code.IB","name" ,"issuedate","maturitydate","couponrate","frequency")
   
-  cols$maturitydate= format(as.POSIXct(cols$maturitydate, origin="1970-01-01 08:00:00"),format="%Y/%m/%d")
   
-  cols$issuedate= format(as.POSIXct(cols$issuedate, origin="1970-01-01 00:08:00"),format="%Y/%m/%d")
+  cols$issuedate= format(as.POSIXct(cols$issuedate, origin="1970-01-01 08:00:00"),format="%Y/%m/%d")
+  cols$maturitydate= format(as.POSIXct(cols$maturitydate, origin="1970-01-01 08:00:00"),format="%Y/%m/%d")
   
   cols    
 }

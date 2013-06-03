@@ -226,9 +226,12 @@ InitGovBondInfo = function(GovBondInfo)
     }
     else
     {
+      print("Error in Calculation,date doen't match")
+      print(ISIN[i])
       print(date)
       print(MATURITYDATE[i])
-      cat("Error in Calculation,date doen't match")
+      print(ISSUEDATE[i])
+      
     }
   }
   
