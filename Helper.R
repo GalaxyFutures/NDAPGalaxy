@@ -1,8 +1,6 @@
 library("termstrc")
 
-#Debug Begin
-sink("e:/test.txt")
-#Debug End
+
 #######################################################################
 ############ 中国版计算方式,不算连续复利，而是按年付息 ################
 ############ 计算收益率、价格、久期的三个函数          ################
@@ -154,22 +152,16 @@ ResetToday = function(bonddata,group,today=Sys.Date(),removeNotIssued = FALSE)
   i = 1
   print(length(bonddata[[group]]$CASHFLOWS$DATE))
   while( i <= length(bonddata[[group]]$CASHFLOWS$DATE))
-  {    
-    print(bonddata[[group]]$CASHFLOWS$DATE[i])
-    print( bonddata[[group]]$TODAY)
-    print(bonddata[[group]]$CASHFLOWS$DATE[i] < bonddata[[group]]$TODAY)
-    if( is.na(bonddata[[group]]$CASHFLOWS$DATE[i]))
-      print("fuck fuck fuck")
+  {      
     if(bonddata[[group]]$CASHFLOWS$DATE[i] < bonddata[[group]]$TODAY)##过期的Cashflow
     {      
-      #bonddata[[group]]$CASHFLOWS$DATE = bonddata[[group]]$CASHFLOWS$DATE[-i]
-      #bonddata[[group]]$CASHFLOWS$CF   = bonddata[[group]]$CASHFLOWS$CF[-i]
-      #bonddata[[group]]$CASHFLOWS$ISIN = bonddata[[group]]$CASHFLOWS$ISIN[-i]      
+      bonddata[[group]]$CASHFLOWS$DATE = bonddata[[group]]$CASHFLOWS$DATE[-i]
+      bonddata[[group]]$CASHFLOWS$CF   = bonddata[[group]]$CASHFLOWS$CF[-i]
+      bonddata[[group]]$CASHFLOWS$ISIN = bonddata[[group]]$CASHFLOWS$ISIN[-i]      
     }
     else
       i = i+1
   }
-  print(i)
   bonddata
 }
 
@@ -177,20 +169,11 @@ ResetToday = function(bonddata,group,today=Sys.Date(),removeNotIssued = FALSE)
 ###############   Function: 将从CSV文件中读取获得的原始数据   ############
 ###############             转换为termstr需要的数据格式。     ############
 ###############             多一列数据付息频率FREQUENCY       ############
-InitGovBondInfo = function(GovBondInfo,arg_bFromCsv)
+InitGovBondInfo = function(GovBondInfo)
 {
-  #Debug
-  #GovBondInfo = GetBondInfosFromMongo2()
-  #arg_bFromCsv = F
-  
-    
-  
-  MATURITYDATE= as.POSIXct(GovBondInfo$maturitydate, origin="1970-01-01 08:00:00")
-  ISSUEDATE     = as.POSIXct(GovBondInfo$issuedate, origin="1970-01-01 08:00:00")
-  
-  
   ISIN          = substr(as.character(GovBondInfo$code.IB),1,6)
-  
+  MATURITYDATE  = as.Date(GovBondInfo$maturitydate,"%Y/%m/%d")
+  ISSUEDATE     = as.Date(GovBondInfo$issuedate,"%Y/%m/%d")
   COUPONRATE    = GovBondInfo$couponrate/100
   FREQUENCY     = GovBondInfo$frequency
   PRICE         = rep(100,length(ISIN))
@@ -200,7 +183,6 @@ InitGovBondInfo = function(GovBondInfo,arg_bFromCsv)
   CASHFLOW_CF   = NULL
   CASHFLOW_DATE = as.Date("2000-01-01","%Y/%m/%d")
   CASHFLOW_ISIN = NULL
-  
   j = 1
   for( i in  1:length(ISIN))
   {
@@ -230,7 +212,6 @@ InitGovBondInfo = function(GovBondInfo,arg_bFromCsv)
       
       j = j+1
     }
-    print(222)
     if(date == MATURITYDATE[i])
     {
       if( FREQUENCY[i] == 1 )
@@ -244,7 +225,11 @@ InitGovBondInfo = function(GovBondInfo,arg_bFromCsv)
       j = j+1
     }
     else
+    {
+      print(date)
+      print(MATURITYDATE[i])
       cat("Error in Calculation,date doen't match")
+    }
   }
   
   CASHFLOWS = list(ISIN=CASHFLOW_ISIN,CF=CASHFLOW_CF,DATE=CASHFLOW_DATE)
@@ -338,11 +323,11 @@ AddTFInfo = function(bonddata,group,TFInfo)
 CalculateTFParam = function(bonddata,group,SettlementDate,TFNAME)
 {
   #Debug Begin
-  bonddata = BondInfo
-  group = "GOV"
-  i=8
-  SettlementDate = TFInfo$settlementDate[i]
-  TFNAME = TFInfo$TFname[i]
+  #bonddata = BondInfo
+  #group = "GOV"
+  #i=8
+  #SettlementDate = TFInfo$settlementDate[i]
+  #TFNAME = TFInfo$TFname[i]
   #Debug End
   
   temp = ResetToday(bonddata,group, SettlementDate)
