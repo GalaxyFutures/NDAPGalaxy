@@ -9,6 +9,7 @@
 ###Hello world!!bbbbb
 ###It's me!
 >>>>>>> 40d01998a10c0f9e77b4e7a0fc9df105beaafb7a
+###New2
 
 InitMongoDb("221.133.243.54","NDAPReader","Reader@Galaxy")
 
