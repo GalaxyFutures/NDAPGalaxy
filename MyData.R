@@ -2,8 +2,9 @@
 ################### Loading Data  #####################################
 
 ###New9
-
+###Fuckyou!!!!!
 ###ccomics
+###hello world
 
 
 InitMongoDb("221.133.243.54","NDAPReader","Reader@Galaxy")
