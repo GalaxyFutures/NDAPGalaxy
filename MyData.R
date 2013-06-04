@@ -2,7 +2,7 @@
 ################### Loading Data  #####################################
 
 ###Date:2013/06/05
-###Test
+###Hello world!!
 
 InitMongoDb("221.133.243.54","NDAPReader","Reader@Galaxy")
 
