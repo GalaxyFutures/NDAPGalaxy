@@ -1,14 +1,9 @@
 #######################################################################
 ################### Loading Data  #####################################
 
-###New9
+Write Line 
 
-###Fucky2!!
-###hello world1
-
-###ccomics
-
-###hello world2
+ccd
 
 
 InitMongoDb("221.133.243.54","NDAPReader","Reader@Galaxy")
