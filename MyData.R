@@ -2,6 +2,7 @@
 ################### Loading Data  #####################################
 
 ###Date:2013/06/04
+###Change From WangHua
 
 InitMongoDb("221.133.243.54","NDAPReader","Reader@Galaxy")
 
