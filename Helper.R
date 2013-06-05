@@ -1,6 +1,4 @@
 library("termstrc")
-
-
 #######################################################################
 ############ 中国版计算方式,不算连续复利，而是按年付息 ################
 ############ 计算收益率、价格、久期的三个函数          ################
@@ -116,7 +114,7 @@ create_maturities_matrix_China = function (group, include_price = FALSE)
 ###############   Function: Reset current Date          ##################
 ###############   Remove obsolete bond,Recalculate CF   ##################
 ##注意这里对TF相关信息没有后续修改,最好在调用AddTFInfo前调用本函数
-ResetToday = function(bonddata,group,today=Sys.Date(),removeNotIssued = FALSE)
+ResetToday = function(bonddata,group,today=Sys.Date(),removeNotIssued = TRUE,removeObsoleteBond = TRUE,removeObsoleteCF = TRUE)
 {
   bonddata[[group]]$TODAY = today
   ##Remove not issue yet bond data
@@ -132,35 +130,40 @@ ResetToday = function(bonddata,group,today=Sys.Date(),removeNotIssued = FALSE)
       else
         i = i+1
     }
+    print("RemoveNotIssued Completed")
   }
-  
-  print("RemoveNotIssued Completed")
-  ##Remove obsolete bond data 
-  i = 1  
-  while( i <= length(bonddata[[group]]$MATURITYDATE))
+  ##Remove obsolete bond data
+  if( removeObsoleteBond )
   {
-    if(bonddata[[group]]$MATURITYDATE[i] < bonddata[[group]]$TODAY)##已经退市的bond
+    i = 1  
+    while( i <= length(bonddata[[group]]$MATURITYDATE))
     {
-      bonddata = rm_bond_China(bonddata, group, bonddata[[group]]$ISIN[i])
+      if(bonddata[[group]]$MATURITYDATE[i] < bonddata[[group]]$TODAY)##已经退市的bond
+      {
+        bonddata = rm_bond_China(bonddata, group, bonddata[[group]]$ISIN[i])
+      }
+      else
+        i = i+1
     }
-    else
-      i = i+1
+    print("Remove obsolete bond data Completed")
   }
-  
-  print("Remove obsolete bond data Completed")
-  ##Remove obsolete CF data
-  i = 1
-  print(length(bonddata[[group]]$CASHFLOWS$DATE))
-  while( i <= length(bonddata[[group]]$CASHFLOWS$DATE))
-  {      
-    if(bonddata[[group]]$CASHFLOWS$DATE[i] < bonddata[[group]]$TODAY)##过期的Cashflow
+  if( removeObsoleteCF )
+  {
+    ##Remove obsolete CF data
+    i = 1
+    print(length(bonddata[[group]]$CASHFLOWS$DATE))
+    while( i <= length(bonddata[[group]]$CASHFLOWS$DATE))
     {      
-      bonddata[[group]]$CASHFLOWS$DATE = bonddata[[group]]$CASHFLOWS$DATE[-i]
-      bonddata[[group]]$CASHFLOWS$CF   = bonddata[[group]]$CASHFLOWS$CF[-i]
-      bonddata[[group]]$CASHFLOWS$ISIN = bonddata[[group]]$CASHFLOWS$ISIN[-i]      
+      if(bonddata[[group]]$CASHFLOWS$DATE[i] < bonddata[[group]]$TODAY)##过期的Cashflow
+      {      
+        bonddata[[group]]$CASHFLOWS$DATE = bonddata[[group]]$CASHFLOWS$DATE[-i]
+        bonddata[[group]]$CASHFLOWS$CF   = bonddata[[group]]$CASHFLOWS$CF[-i]
+        bonddata[[group]]$CASHFLOWS$ISIN = bonddata[[group]]$CASHFLOWS$ISIN[-i]      
+      }
+      else
+        i = i+1
     }
-    else
-      i = i+1
+    print("Remove obsolete CF data Completed")
   }
   bonddata
 }
@@ -171,7 +174,7 @@ ResetToday = function(bonddata,group,today=Sys.Date(),removeNotIssued = FALSE)
 ###############             多一列数据付息频率FREQUENCY       ############
 InitGovBondInfo = function(GovBondInfo)
 {
-  ISIN          = substr(as.character(GovBondInfo$code.IB),1,6)
+  ISIN          = as.character(GovBondInfo$code.IB)
   MATURITYDATE  = as.Date(GovBondInfo$maturitydate,"%Y/%m/%d")
   ISSUEDATE     = as.Date(GovBondInfo$issuedate,"%Y/%m/%d")
   COUPONRATE    = GovBondInfo$couponrate/100
@@ -255,16 +258,11 @@ InitGovBondInfo = function(GovBondInfo)
 }
 
 
-##########################################################################
-###############   Function: 给债券基础信息加上TF相关参数      ############
-###############             包括：是否为可交割券，CF因子      ############
-AddTFInfo = function(bonddata,group,TFInfo)
-{ 
-  bonddata = BondInfo
-  group="GOV"
-  
-  bonddata[[group]]$TFname = TFInfo$TFname
-  bonddata[[group]]$TFprice = rep(100,length(TFInfo$TFname))
+##################################################################################
+###############   Function: 更新bonddata 的TF是否可交割信息           ############
+###############             矩阵的行、列数根据目前的ISIN，TFInfo决定  ############
+UpdateDeliverable = function(bonddata,group,TFInfo)
+{
   #条件1：4-7年
   minDate <- as.POSIXlt(TFInfo$settlementMonth)
   minDate$year <- minDate$year+4
@@ -293,12 +291,22 @@ AddTFInfo = function(bonddata,group,TFInfo)
   
   bonddata[[group]]$deliverable = deliverable
   
+  bonddata
+}
+##########################################################################
+###############   Function: 给债券基础信息加上TF相关参数      ############
+###############             包括：是否为可交割券，CF因子      ############
+AddTFInfo = function(bonddata,group,TFInfo)
+{ 
+  bonddata[[group]]$TFname = TFInfo$TFname
+  bonddata[[group]]$TFprice = rep(100,length(TFInfo$TFname))
+  
+  bonddata = UpdateDeliverable(bonddata,group,TFInfo)
   
   conversionFactor = matrix(data=0,nr = length(TFInfo$TFname),nc = length(bonddata[[group]]$ISIN))
   accruedInterest  = matrix(data=0,nr = length(TFInfo$TFname),nc = length(bonddata[[group]]$ISIN))
-  for( i in 8:length(TFInfo$TFname))
+  for( i in 1:length(TFInfo$TFname))
   {
-    i=8
     if(bonddata[[group]]$TODAY >= TFInfo$settlementDate[i])
     {
       conversionFactor[i,]= rep(0,length(bonddata[[group]]$ISIN))
@@ -306,11 +314,10 @@ AddTFInfo = function(bonddata,group,TFInfo)
     }
     else
     {
-      temp = CalculateTFParam(bonddata,group,TFInfo$settlementDate[i],TFInfo$TFname[i])
+      temp = CalculateTFParam(bonddata,group,TFInfo,i)
       conversionFactor[i,] = temp$CF
       accruedInterest[i,] = temp$ACCRUED
-    }
-    
+    }    
   }
   
   dimnames(conversionFactor) = list(TFInfo$TFname,bonddata[[group]]$ISIN)
@@ -323,22 +330,17 @@ AddTFInfo = function(bonddata,group,TFInfo)
 ##########################################################################
 ###############   被AddTFInfo调用: 计算CF、accrued            ############
 ###############   注意这里需要bonddata包括deliverable信息     ############
-CalculateTFParam = function(bonddata,group,SettlementDate,TFNAME)
+CalculateTFParam = function(bonddata,group,TFInfo,i)
 {
-  #Debug Begin
-  #bonddata = BondInfo
-  #group = "GOV"
-  #i=8
-  #SettlementDate = TFInfo$settlementDate[i]
-  #TFNAME = TFInfo$TFname[i]
-  #Debug End
-  
-  temp = ResetToday(bonddata,group, SettlementDate)
-  
+  SettlementDate = TFInfo$settlementDate[i]
+  TFNAME         = TFInfo$TFname[i]
+ 
+  temp = ResetToday(bonddata,group, SettlementDate,FALSE,FALSE,FALSE)
+
   cf1 = create_cashflows_matrix(temp[[group]])
   m1 = create_maturities_matrix_China(temp[[group]])
   
-  priceClean = bond_pricesClean_China(cf1,m1,rep(0.03,length(temp[[group]]$ISIN)),temp[[group]]$FREQUENCY)
+  priceClean = bond_pricesClean_China(cf1,m1,rep(0.03,length(bonddata[[group]]$ISIN)),bonddata[[group]]$FREQUENCY)
   ACCRUED = cf1[1,] * (1 - m1[1,])
   ##CF只保留4位小数，后面舍去
   priceClean = floor(priceClean*100)
