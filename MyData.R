@@ -1,10 +1,6 @@
 #######################################################################
 ################### Loading Data  #####################################
 
-Write Line 
-
-ccd
-
 
 InitMongoDb("221.133.243.54","NDAPReader","Reader@Galaxy")
 
@@ -50,10 +46,11 @@ BondInfo = InitGovBondInfo( DbBondInfo )
 
 
 
-########## è´§å¸å¸åºå©çèµ°å¿ä¿¡æ¯ #########################
-QuoteMoneyMarket <- read.csv(file="D:\\NationalDebt\\Data\\R1MR3M.csv",head=TRUE,sep=",")
+########## R1MR3M #########################
+#QuoteMoneyMarket <- read.csv(file="D:\\NationalDebt\\Data\\R1MR3M.csv",head=TRUE,sep=",")
+#QuoteMoneyMarket$date = as.Date(QuoteMoneyMarket$date,"%Y/%m/%d")
+QuoteMoneyMarket = GetR1MR3MFromMongo()
 QuoteMoneyMarket$date = as.Date(QuoteMoneyMarket$date,"%Y/%m/%d")
-
 
 ########## TF Quote (Daily) #########################
 #strQuoteFileDirectory = "D:\\NationalDebt\\Data\\GZQH\\"
@@ -87,6 +84,8 @@ for(i in 1:length(BondNames))
 }
 
 
-########## 5Y YTM and R1M å¯¹æ¯æ°æ® ########################
-QuoteYTMandR1M = read.csv(file="D:\\NationalDebt\\Data\\R1M.csv",head=TRUE,sep=",")
+########## 5Y YTM and R1M ########################
+#QuoteYTMandR1M = read.csv(file="D:\\NationalDebt\\Data\\R1M.csv",head=TRUE,sep=",")
+#QuoteYTMandR1M$date = as.Date(QuoteYTMandR1M$date,"%Y/%m/%d")
+QuoteYTMandR1M = GetYTMR1MFromMongo()
 QuoteYTMandR1M$date = as.Date(QuoteYTMandR1M$date,"%Y/%m/%d")

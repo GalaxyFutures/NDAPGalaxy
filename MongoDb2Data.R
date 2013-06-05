@@ -52,7 +52,27 @@ GetBondInfosFromMongo2 = function ()
   cols    
 }
 
+#返回R1MR3M
+GetR1MR3MFromMongo = function()
+{
+  strNS = paste("NDAP","R1MR3M",sep=".");
+  cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
+  #date,open,high,low,close,average,volume,holding
+  R1MR3M = list(  format(as.POSIXct(cols$'_id', origin="1970-01-01 08:00:00"),format="%Y/%m/%d") ,cols$R1M,cols$R3M)
+  names(R1MR3M)=c("date","R1M","R3M")
+  R1MR3M
+}
 
+#返回YTM R1M
+GetYTMR1MFromMongo = function()
+{
+  strNS = paste("NDAP","R1M",sep=".");
+  cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
+  #date,open,high,low,close,average,volume,holding
+  YTMR1M = list(  format(as.POSIXct(cols$'_id', origin="1970-01-01 08:00:00"),format="%Y/%m/%d") ,cols$YTMgov5year,cols$YTMgov3year,cols$r1m)
+  names(YTMR1M)=c("date","YTMgov5year","YTMgov3year","R1M")
+  YTMR1M
+}
 
 
 #返回TF日度数据
