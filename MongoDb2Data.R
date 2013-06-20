@@ -46,8 +46,8 @@ GetBondInfosFromMongo2 = function ()
   names(cols)= c("code.IB","name" ,"issuedate","maturitydate","couponrate","frequency")
   
   
-  cols$issuedate= format(as.POSIXct(cols$issuedate, origin="1970-01-01 08:00:00"),format="%Y/%m/%d")
-  cols$maturitydate= format(as.POSIXct(cols$maturitydate, origin="1970-01-01 08:00:00"),format="%Y/%m/%d")
+  cols$issuedate= format( GetDate(cols$issuedate) ,format="%Y/%m/%d")
+  cols$maturitydate= format(GetDate(cols$maturitydate),format="%Y/%m/%d")
   
   cols    
 }
@@ -77,11 +77,15 @@ GetYTMR1MFromMongo = function()
 
 #返回TF日度数据
 GetTFDailyDatasFromMongo = function(arg_strTF)
-{
-  strNS = paste("NDAP",arg_strTF,"Day",sep=".");
+{ 
+  strNS = paste("NDAP",arg_strTF,"Daily",sep=".");
   cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
   #date,open,high,low,close,average,volume,holding
-  datasDaily = list( as.Date(as.POSIXct(cols$'_id', origin="1970-01-01 08:00:00")),cols$open,cols$high,cols$low,cols$close,cols$average,cols$volume,cols$holding,cols$settle)
+  #注意这里时间是+16,无奈之举,否则时间有错误,时差问题
+  #数据库中时间是当地时间，读取出后需要+8才能使as.POSIXct显示正确的CTS时间
+  #但是as.Date会根据时差，自动转成GMT时间,也就是自动减去8
+  #所以必须+16.......我怎么觉得有点绕进去了
+  datasDaily = list( as.Date(as.POSIXct(cols$'_id', origin="1970-01-01 16:00:00")),cols$open,cols$high,cols$low,cols$close,cols$average,cols$volume,cols$holding,cols$settle)
   names(datasDaily)=c("date","open","high","low","close","average","volume","holding","settle")
   datasDaily
 }
