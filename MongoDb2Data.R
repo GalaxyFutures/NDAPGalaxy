@@ -1,6 +1,6 @@
 
 
-ndapdb
+ndapdb<-0
 
 InitMongoDb = function(arg_strAddress,arg_strUser,arg_strPass)
 {
@@ -81,18 +81,17 @@ GetTFDailyDatasFromMongo = function(arg_strTF)
   strNS = paste("NDAP",arg_strTF,"Day",sep=".");
   cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
   #date,open,high,low,close,average,volume,holding
-  datasDaily = list( GetDateFromTicks(cols$X_id),cols$open,cols$high,cols$low,cols$close,cols$average,cols$volume,cols$holding)
-  names(datasDaily)=c("date","open","high","low","close","average","volume","holding")
+  datasDaily = list( as.Date(as.POSIXct(cols$'_id', origin="1970-01-01 08:00:00")),cols$open,cols$high,cols$low,cols$close,cols$average,cols$volume,cols$holding,cols$settle)
+  names(datasDaily)=c("date","open","high","low","close","average","volume","holding","settle")
   datasDaily
 }
 
 
 GetBondDailyDatasFromMongo = function(arg_strBond)
-{
-  
+{  
   strNS = paste("NDAP.Bond",bondname,"Daily",sep="_");  
   cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
-  cols$'_id' <- GetDateFromTicks(cols$'_id')
+  cols$'_id' <- as.Date(GetDateFromTicks(cols$'_id'))
   #date,open,high,low,close,average,volume,holding
   #datasDaily = data.frame( GetDateFromTicks(frm$X_id),frm$open,frm$high,frm$low,frm$close,frm$average,frm$volume,frm$holding)
   cols = list(cols$'_id',cols$'dirtyCsi',cols$'accruedInterestCsi',cols$'netCsi',cols$'yieldCsi',cols$'modiduraCsi',cols$'cnvxtyCsi')

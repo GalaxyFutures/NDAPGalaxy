@@ -72,8 +72,7 @@ QuoteMoneyMarket$date = as.Date(QuoteMoneyMarket$date,"%Y/%m/%d")
 QuoteTF = list()
 for(i in 1:length(TFNames))
   QuoteTF[[TFNames[i]]] = GetTFDailyDatasFromMongo(TFNames[[i]])
-
-
+str(QuoteTF)
 
 ########## Bond Quote (Daily) ########################
 #现券中证估值
@@ -81,8 +80,9 @@ BondNames = DbBondInfo[["code.IB"]]
 QuoteBond = list()
 for(i in 1:length(BondNames))
 {
+  i=1
   bondname = BondNames[[i]]  
-  QuoteBond[[bondname]]= GetBondDailyDatasFromMongo(bondname)
+  ttt = QuoteBond[[bondname]]= GetBondDailyDatasFromMongo(bondname)
 }
 
 
