@@ -11,6 +11,7 @@ InitMongoDb = function(arg_strAddress,arg_strUser,arg_strPass)
 
 
 #返回BondInfo
+#返回BondInfo
 GetBondInfosFromMongo = function () 
 {
   cols = GetColumnsFromMongo_Tool(ndapdb,"NDAP.BondVariety",F)
