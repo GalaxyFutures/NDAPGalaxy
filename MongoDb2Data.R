@@ -58,7 +58,8 @@ GetR1MR3MFromMongo = function()
   strNS = paste("NDAP","R1MR3M",sep=".");
   cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
   #date,open,high,low,close,average,volume,holding
-  R1MR3M = list(  format(as.POSIXct(cols$'_id', origin="1970-01-01 08:00:00"),format="%Y/%m/%d") ,cols$R1M,cols$R3M)
+  #R1MR3M = list(  format(as.POSIXct(cols$'_id', origin="1970-01-01 08:00:00"),format="%Y/%m/%d") ,cols$R1M,cols$R3M)
+  R1MR3M = list(  format(GetDate(cols$'_id')),format="%Y/%m/%d") ,cols$R1M,cols$R3M)
   names(R1MR3M)=c("date","R1M","R3M")
   R1MR3M
 }
@@ -69,7 +70,8 @@ GetYTMR1MFromMongo = function()
   strNS = paste("NDAP","R1M",sep=".");
   cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
   #date,open,high,low,close,average,volume,holding
-  YTMR1M = list(  format(as.POSIXct(cols$'_id', origin="1970-01-01 08:00:00"),format="%Y/%m/%d") ,cols$YTMgov5year,cols$YTMgov3year,cols$r1m)
+  #YTMR1M = list(  format(as.POSIXct(cols$'_id', origin="1970-01-01 08:00:00"),format="%Y/%m/%d") ,cols$YTMgov5year,cols$YTMgov3year,cols$r1m)
+  YTMR1M = list(  format(GetDate(cols$'_id'),format="%Y/%m/%d") ,cols$YTMgov5year,cols$YTMgov3year,cols$r1m)
   names(YTMR1M)=c("date","YTMgov5year","YTMgov3year","R1M")
   YTMR1M
 }
@@ -80,12 +82,9 @@ GetTFDailyDatasFromMongo = function(arg_strTF)
 { 
   strNS = paste("NDAP",arg_strTF,"Daily",sep=".");
   cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
-  #date,open,high,low,close,average,volume,holding
-  #注意这里时间是+16,无奈之举,否则时间有错误,时差问题
-  #数据库中时间是当地时间，读取出后需要+8才能使as.POSIXct显示正确的CTS时间
-  #但是as.Date会根据时差，自动转成GMT时间,也就是自动减去8
-  #所以必须+16.......我怎么觉得有点绕进去了
-  datasDaily = list( as.Date(as.POSIXct(cols$'_id', origin="1970-01-01 16:00:00")),cols$open,cols$high,cols$low,cols$close,cols$average,cols$volume,cols$holding,cols$settle)
+  #date,open,high,low,close,average,volume,holding 
+  #datasDaily = list( as.Date(as.POSIXct(cols$'_id', origin="1970-01-01 16:00:00")),cols$open,cols$high,cols$low,cols$close,cols$average,cols$volume,cols$holding,cols$settle)
+  datasDaily = list( GetDate(cols$'_id')),cols$open,cols$high,cols$low,cols$close,cols$average,cols$volume,cols$holding,cols$settle)
   names(datasDaily)=c("date","open","high","low","close","average","volume","holding","settle")
   datasDaily
 }
@@ -95,7 +94,8 @@ GetBondDailyDatasFromMongo = function(arg_strBond)
 {  
   strNS = paste("NDAP.Bond",bondname,"Daily",sep="_");  
   cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
-  cols$'_id' <- as.Date(GetDateFromTicks(cols$'_id'))
+  #cols$'_id' <- as.Date(GetDateFromTicks(cols$'_id'))
+  cols$'_id' <- as.Date(GetDate(cols$'_id'))
   #date,open,high,low,close,average,volume,holding
   #datasDaily = data.frame( GetDateFromTicks(frm$X_id),frm$open,frm$high,frm$low,frm$close,frm$average,frm$volume,frm$holding)
   cols = list(cols$'_id',cols$'dirtyCsi',cols$'accruedInterestCsi',cols$'netCsi',cols$'yieldCsi',cols$'modiduraCsi',cols$'cnvxtyCsi')
