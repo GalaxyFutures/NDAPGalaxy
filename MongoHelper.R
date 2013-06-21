@@ -37,6 +37,9 @@ GetDatasMongo_Tool = function(arg_db , arg_strNS , arg_bRemoveId)
   dfrm
 }
 
+
+
+
 ####### Get Datas from MongoDb #######
 ##Summary:
 ##Range: Internal

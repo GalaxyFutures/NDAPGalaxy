@@ -79,10 +79,10 @@ str(QuoteTF)
 BondNames = DbBondInfo[["code.IB"]]
 QuoteBond = list()
 for(i in 1:length(BondNames))
-{
-  i=1
-  bondname = BondNames[[i]]  
-  ttt = QuoteBond[[bondname]]= GetBondDailyDatasFromMongo(bondname)
+{ 
+  bondname = BondNames[[i]]   
+  str(bondname)
+  QuoteBond[[bondname]]= GetBondDailyDatasFromMongo(bondname)
 }
 
 
