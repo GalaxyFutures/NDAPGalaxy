@@ -4,7 +4,7 @@
 
 ###test wanghua
 
-InitMongoDb("221.133.243.54","NDAPReader","Reader@Galaxy")
+InitMongoDb("221.133.243.54:3401","NDAPReader","Reader@Galaxy")
 
 TFNames = c("TF1203","TF1206","TF1209","TF1212","TF1303","TF1306","TF1309","TF1312")
 ########## TF Basic Info #########################

@@ -59,7 +59,7 @@ GetR1MR3MFromMongo = function()
   cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
   #date,open,high,low,close,average,volume,holding
   #R1MR3M = list(  format(as.POSIXct(cols$'_id', origin="1970-01-01 08:00:00"),format="%Y/%m/%d") ,cols$R1M,cols$R3M)
-  R1MR3M = list(  format(GetDate(cols$'_id')),format="%Y/%m/%d") ,cols$R1M,cols$R3M)
+  R1MR3M = list(  format(GetDate(cols$'_id'),format="%Y/%m/%d") ,cols$R1M,cols$R3M)
   names(R1MR3M)=c("date","R1M","R3M")
   R1MR3M
 }
@@ -84,7 +84,7 @@ GetTFDailyDatasFromMongo = function(arg_strTF)
   cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
   #date,open,high,low,close,average,volume,holding 
   #datasDaily = list( as.Date(as.POSIXct(cols$'_id', origin="1970-01-01 16:00:00")),cols$open,cols$high,cols$low,cols$close,cols$average,cols$volume,cols$holding,cols$settle)
-  datasDaily = list( GetDate(cols$'_id')),cols$open,cols$high,cols$low,cols$close,cols$average,cols$volume,cols$holding,cols$settle)
+  datasDaily = list( GetDate(cols$'_id'),cols$open,cols$high,cols$low,cols$close,cols$average,cols$volume,cols$holding,cols$settle)
   names(datasDaily)=c("date","open","high","low","close","average","volume","holding","settle")
   datasDaily
 }
