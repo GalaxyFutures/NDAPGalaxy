@@ -92,7 +92,7 @@ GetTFDailyDatasFromMongo = function(arg_strTF)
 
 GetBondDailyDatasFromMongo = function(arg_strBond)
 {  
-  bondname="010214.IB"
+  #bondname="010214.IB"
   strNS = paste("NDAP.Bond",bondname,"Daily",sep="_");  
   cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
   #cols$'_id' <- as.Date(GetDateFromTicks(cols$'_id'))
