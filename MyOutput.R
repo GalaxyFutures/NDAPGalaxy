@@ -1,6 +1,6 @@
 
 
-BondInfo = ResetToday(BondInfo,"GOV","2013-02-18",FALSE,FALSE,FALSE)
+BondInfo = ResetToday(BondInfo,"GOV","2013-02-18",FALSE,FALSE,TRUE)
 
 BondInfo = AddTFInfo(BondInfo,"GOV",TFInfo)
 BondInfo = InitBondPrice(BondInfo,"GOV",QuoteBond)
