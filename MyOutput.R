@@ -1,6 +1,10 @@
 
 
+<<<<<<< HEAD
 BondInfo = ResetToday(BondInfo,"GOV","2012-11-01",FALSE,FALSE,TRUE)
+=======
+BondInfo = ResetToday(BondInfo,"GOV","2013-02-18",FALSE,FALSE,TRUE)
+>>>>>>> 943f0b83d43cea66b28be1f366d0440468355bf2
 
 BondInfo = AddTFInfo(BondInfo,"GOV",TFInfo)
 BondInfo = InitBondPrice(BondInfo,"GOV",QuoteBond)
