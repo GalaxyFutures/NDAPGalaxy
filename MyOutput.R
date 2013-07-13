@@ -12,5 +12,5 @@ BondInfo = CalculateNetBasis(BondInfo,"GOV",TFInfo,QuoteBond,QuoteTF,QuoteMoneyM
 BondInfo = CalculateIRR(BondInfo,"GOV",TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket)
 
 BondInfo = InitBPV(BondInfo,"GOV", QuoteBond) 
-BondInfo = FindCTD(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
+BondInfo = FindCTD(BondInfo,"GOV",TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket)
 BondInfo = CalculateBPVTF(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)

@@ -525,15 +525,19 @@ CalculateNetBasis = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyM
   bonddata[[group]]$netBasis = netBasis
   bonddata
 }
-
-FindCTD = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
+######测试代码################
+##bonddata = BondInfo
+##group = "GOV"
+#####################
+FindCTD = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
-  TFIRR = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis,MoneyMarketBasis)[[group]]$TFIRR
+  TFIRR = CalculateIRR(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,BondYTMBasis,MoneyMarketBasis)[[group]]$TFIRR
   
   temp = TFIRR
   ##这里有个小bug，默认任何TFIRR不应该精确等于0，如果出现，这个债券不可能被选为CTD
-  temp[which(temp == 0)] = -2000
+  temp[which(temp == 0)]   = -2000
   temp[which(temp == Inf)] = -2000
+  temp[which(is.na(temp))] = -2000
   maxIRR = apply(temp,1,"max")
   maxIRR = matrix(data = maxIRR,
                   nr = length(TFInfo$TFname),
