@@ -4,6 +4,7 @@ library("termstrc")
 ############ 计算收益率、价格、久期的三个函数          ################
 bond_yields_China = function (cashflows, m, searchint = c(-1, 1), tol = 1e-10) 
 {
+  
   if (!is.matrix(cashflows)) 
     cashflows <- as.matrix(cashflows)
   if (!is.matrix(m)) 
@@ -609,9 +610,9 @@ InitBondPrice = function(bondinfo,group,QuoteBond,BondYTMBasis = 0)
   for(i in 1:length(bondinfo[[group]]$ISIN))
   {
     #bondName = paste("Bond",bondinfo[[group]]$ISIN[i],sep="")
-    bondName=bondinfo[[group]]$ISIN[i]
+    bondName = bondinfo[[group]]$ISIN[i]
     idx      = which(QuoteBond[[bondName]]$date == bondinfo[[group]]$TODAY)
-    length(idx)
+
     if(length(idx) == 1)
     {
       YTM[i] = QuoteBond[[bondName]]$YTM[idx]
