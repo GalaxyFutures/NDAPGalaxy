@@ -61,7 +61,7 @@ GetTreasureInfosFromMongo = function ()
   i = 1
   while(i<=cntRow)
   {
-    if( rows[[i]][[13]]!=1 )
+    if( rows[[i]][[13]]!=1 ||  rows[[i]]$frequency!=2)
     {
       rows[[i]]<-NULL
       cntRow = cntRow-1;
