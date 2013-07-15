@@ -43,7 +43,8 @@ TFInfo = list(
 #BondInfo = subset(BondInfo,BondInfo$code.IB != "")
 #BondInfo = InitGovBondInfo(BondInfo)
 
-DbBondInfo = GetBondInfosFromMongo2()
+#GetBondInfosFromMongo2()
+DbBondInfo = GetTreasureInfosFromMongo() 
 BondInfo = InitGovBondInfo( DbBondInfo )
 
 
