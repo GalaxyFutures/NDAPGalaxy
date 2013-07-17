@@ -44,7 +44,7 @@ TFInfo = list(
 #BondInfo = InitGovBondInfo(BondInfo)
 
 #GetBondInfosFromMongo2()
-DbBondInfo = GetTreasureInfosFromMongo() 
+DbBondInfo = GetUsefulTreasureInfosFromMongo()#GetTreasureInfosFromMongo() 
 BondInfo = InitGovBondInfo( DbBondInfo )
 
 

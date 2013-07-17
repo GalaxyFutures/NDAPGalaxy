@@ -82,6 +82,22 @@ GetTreasureInfosFromMongo = function ()
   cols    
 }
 
+GetUsefulTreasureInfosFromMongo = function () 
+{  
+  rows = GetRowsFromMongo_Tool(ndapdb,"NDAP.TFBONDEX",F)  
+  
+  cols = Rows2Columns_Tool(rows)
+  
+  cols = list( cols$'_id',cols$Name,cols$issuedate,cols$maturitydate,cols$couponrate,cols$frequency)
+  names(cols)= c("code.IB","name" ,"issuedate","maturitydate","couponrate","frequency")
+  
+  
+  cols$issuedate= format( GetDate(cols$issuedate) ,format="%Y/%m/%d")
+  cols$maturitydate= format(GetDate(cols$maturitydate),format="%Y/%m/%d")
+  
+  cols    
+}
+
 #返回R1MR3M
 GetR1MR3MFromMongo = function()
 {
