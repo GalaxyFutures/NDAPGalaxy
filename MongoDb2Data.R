@@ -132,7 +132,7 @@ GetQuoteMoneyMarketFromMongoDb = function(arg_reponame , arg_dataname )
   cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
   #date,open,high,low,close,average,volume,holding
   #R1MR3M = list(  format(as.POSIXct(cols$'_id', origin="1970-01-01 08:00:00"),format="%Y/%m/%d") ,cols$R1M,cols$R3M)
-  repo = list(  format(GetDate(cols$'_id'),format="%Y/%m/%d") ,cols[[arg_dataname]])
+  repo = list(  GetDate(cols$'_id') ,cols[[arg_dataname]])
   names(repo)=c("date","R1M")
   repo
 }
