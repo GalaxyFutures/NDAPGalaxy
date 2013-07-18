@@ -8,6 +8,19 @@ InitMongoDb = function(arg_strAddress,arg_strUser,arg_strPass)
 }
 
 
+#返回TFVarieties
+GetTFVarietiesFromMongo = function () 
+{  
+  rows = GetRowsFromMongo_Tool(ndapdb,"NDAP.TFVariety",F)  
+  
+  cntRow = length(rows)  
+  cols = Rows2Columns_Tool(rows)
+  
+  cols = list( cols$'_id', GetDate(cols$LastTradeDate), GetYM(GetDate(cols$LastTradeDate)))
+  names(cols)= c("TFname" ,"settlementDate","settlementMonth")
+    
+  cols    
+}
 
 
 #返回BondInfo
@@ -108,6 +121,20 @@ GetR1MR3MFromMongo = function()
   R1MR3M = list(  format(GetDate(cols$'_id'),format="%Y/%m/%d") ,cols$R1M,cols$R3M)
   names(R1MR3M)=c("date","R1M","R3M")
   R1MR3M
+}
+
+#R001 #R007 #R014 #R021 #R1M #R2M #R3M #R4M #R6M #R9M
+#open close average
+GetQuoteMoneyMarketFromMongoDb = function(arg_reponame , arg_dataname )
+{
+  strCollection = paste("REPO_",arg_reponame,".IB",sep="")
+  strNS = paste("NDAP",strCollection , sep=".");
+  cols = GetColumnsFromMongo_Tool(ndapdb,strNS,F)
+  #date,open,high,low,close,average,volume,holding
+  #R1MR3M = list(  format(as.POSIXct(cols$'_id', origin="1970-01-01 08:00:00"),format="%Y/%m/%d") ,cols$R1M,cols$R3M)
+  repo = list(  format(GetDate(cols$'_id'),format="%Y/%m/%d") ,cols[[arg_dataname]])
+  names(repo)=c("date","R1M")
+  repo
 }
 
 #返回YTM R1M

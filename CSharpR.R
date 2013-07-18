@@ -14,3 +14,10 @@ GetDate = function( arg_seconds )
   #所以必须+16.......我怎么觉得有点绕进去了 
   as.Date(as.POSIXct(arg_seconds, origin = "1970-01-01 16:00:00"))
 }
+
+GetYM = function( arg_dates)
+{
+  p = as.POSIXlt(arg_dates)
+  
+  as.Date(ISOdate(p$year+1900,p$mon+1,1))
+}

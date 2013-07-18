@@ -6,28 +6,31 @@
 
 InitMongoDb("221.133.243.54:3401","NDAPReader","Reader@Galaxy")
 
-TFNames = c("TF1203","TF1206","TF1209","TF1212","TF1303","TF1306","TF1309","TF1312")
+
+#TFNames = c("TF1203","TF1206","TF1209","TF1212","TF1303","TF1306","TF1309","TF1312")
 ########## TF Basic Info #########################
-TFInfo = list(
-  TFname          = TFNames,
-  settlementDate  = c(as.Date("2012-03-09","%Y-%m-%d"),
-                      as.Date("2012-06-13","%Y-%m-%d"),
-                      as.Date("2012-09-19","%Y-%m-%d"),
-                      as.Date("2012-12-19","%Y-%m-%d"),
-                      as.Date("2013-03-13","%Y-%m-%d"),
-                      as.Date("2013-06-19","%Y-%m-%d"),
-                      as.Date("2013-09-18","%Y-%m-%d"),
-                      as.Date("2013-12-18","%Y-%m-%d")),
-  settlementMonth = c(
-    as.Date("2012-03-01","%Y-%m-%d"),
-    as.Date("2012-06-01","%Y-%m-%d"),
-    as.Date("2012-09-01","%Y-%m-%d"),
-    as.Date("2012-12-01","%Y-%m-%d"),
-    as.Date("2013-03-01","%Y-%m-%d"),
-    as.Date("2013-06-01","%Y-%m-%d"),
-    as.Date("2013-09-01","%Y-%m-%d"),
-    as.Date("2013-12-01","%Y-%m-%d"))
-)
+#TFInfo = list(
+#  TFname          = TFNames,
+#  settlementDate  = c(as.Date("2012-03-09","%Y-%m-%d"),
+#                      as.Date("2012-06-13","%Y-%m-%d"),
+#                      as.Date("2012-09-19","%Y-%m-%d"),
+#                      as.Date("2012-12-19","%Y-%m-%d"),
+#                      as.Date("2013-03-13","%Y-%m-%d"),
+#                      as.Date("2013-06-19","%Y-%m-%d"),
+#                      as.Date("2013-09-18","%Y-%m-%d"),
+#                      as.Date("2013-12-18","%Y-%m-%d")),
+#  settlementMonth = c(
+#    as.Date("2012-03-01","%Y-%m-%d"),
+#    as.Date("2012-06-01","%Y-%m-%d"),
+#    as.Date("2012-09-01","%Y-%m-%d"),
+#    as.Date("2012-12-01","%Y-%m-%d"),
+#    as.Date("2013-03-01","%Y-%m-%d"),
+#    as.Date("2013-06-01","%Y-%m-%d"),
+#    as.Date("2013-09-01","%Y-%m-%d"),
+#    as.Date("2013-12-01","%Y-%m-%d"))
+#)
+
+TFInfo = GetTFVarietiesFromMongo()
 
 
 ########## Bond Basic info #########################
