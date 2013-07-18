@@ -73,6 +73,7 @@ QuoteMoneyMarket$date = as.Date(QuoteMoneyMarket$date,"%Y/%m/%d")
 #QuoteTF$TF1303$date = as.Date(as.character(QuoteTF$TF1303$date),"%Y/%m/%d")
 #QuoteTF$TF1306$date = as.Date(as.character(QuoteTF$TF1306$date),"%Y/%m/%d")
 #str(QuoteTF)
+TFNames=TFInfo$TFname
 QuoteTF = list()
 for(i in 1:length(TFNames))
   QuoteTF[[TFNames[i]]] = GetTFDailyDatasFromMongo(TFNames[[i]])
