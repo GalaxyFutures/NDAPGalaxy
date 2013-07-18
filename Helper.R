@@ -185,58 +185,81 @@ InitGovBondInfo = function(GovBondInfo)
   YTM           = rep(0,length(ISIN))
   BPV           = rep(0,length(ISIN))
   CASHFLOW_CF   = NULL
-  CASHFLOW_DATE = as.Date("2000-01-01","%Y/%m/%d")
+  CASHFLOW_DATE = as.Date("2000/01/01","%Y/%m/%d")
   CASHFLOW_ISIN = NULL
-  j = 1
+  
+  k=0
+  
   for( i in  1:length(ISIN))
   {
+    j = 1
     if( FREQUENCY[i] == 1 )
-      date = seq(ISSUEDATE[i],by = "1 year", length = 2)[2]
+    {
+      date_tmp = seq(ISSUEDATE[i],by = "1 year", length = j+1)[j+1]
+      while(seq(date_tmp,by = "-1 year", length = j+1)[j+1]>ISSUEDATE[i])
+        date_tmp=date_tmp-1
+    }
     else if( FREQUENCY[i] == 2 )
-      date = seq(ISSUEDATE[i],by = "6 month", length = 2)[2]
+    {
+      date_tmp = seq(ISSUEDATE[i],by = "6 month", length = j+1)[j+1]
+      while(seq(date_tmp,by = "-6 months", length = j+1)[j+1]>ISSUEDATE[i])
+        date_tmp=date_tmp-1
+    }
     else
       cat("Error in data,FREQUENCY is not 1 or 2")
-    while(date < MATURITYDATE[i])
+    
+    
+    while(date_tmp < MATURITYDATE[i])
     {
       if( FREQUENCY[i] == 1 )
-        CASHFLOW_CF[j]    = COUPONRATE[i]*100
+        CASHFLOW_CF[k+j]    = COUPONRATE[i]*100
       else if( FREQUENCY[i] == 2 )
-        CASHFLOW_CF[j]    = COUPONRATE[i]*100/2
+        CASHFLOW_CF[k+j]    = COUPONRATE[i]*100/2
       else
         cat("Error in data,FREQUENCY is not 1 or 2")
-      CASHFLOW_DATE[j]  = date
-      CASHFLOW_ISIN[j]  = ISIN[i]
+      CASHFLOW_DATE[k+j]  = date_tmp
+      CASHFLOW_ISIN[k+j]  = ISIN[i]
+      
+      j=j+1
       
       if( FREQUENCY[i] == 1 )
-        date = seq(date,by = "1 year", length = 2)[2]
+      {
+        date_tmp = seq(ISSUEDATE[i],by = "1 year", length = j+1)[j+1]
+        while(seq(date_tmp,by = "-1 year", length = j+1)[j+1]>ISSUEDATE[i])
+          date_tmp=date_tmp-1
+      }
       else if( FREQUENCY[i] == 2 )
-        date = seq(date,by = "6 month", length = 2)[2]
+      {
+        date_tmp = seq(ISSUEDATE[i],by = "6 month", length = j+1)[j+1]
+        while(seq(date_tmp,by = "-6 months", length = j+1)[j+1]>ISSUEDATE[i])
+          date_tmp=date_tmp-1
+      }
       else
         cat("Error in data,FREQUENCY is not 1 or 2")
-      
-      j = j+1
     }
-    if(date == MATURITYDATE[i])
+    
+    if(date_tmp == MATURITYDATE[i])
     {
       if( FREQUENCY[i] == 1 )
-        CASHFLOW_CF[j]    = COUPONRATE[i]*100+100
+        CASHFLOW_CF[k+j]    = COUPONRATE[i]*100+100
       else if( FREQUENCY[i] == 2 )
-        CASHFLOW_CF[j]    = COUPONRATE[i]*100/2+100
+        CASHFLOW_CF[k+j]    = COUPONRATE[i]*100/2+100
       else
         cat("Error in data,FREQUENCY is not 1 or 2")
-      CASHFLOW_DATE[j]  = date
-      CASHFLOW_ISIN[j]  = ISIN[i]
-      j = j+1
+      CASHFLOW_DATE[k+j]  = date_tmp
+      CASHFLOW_ISIN[k+j]  = ISIN[i]
+      k=k+j
     }
     else
     {
-      print("Error in Calculation,date doen't match")
+      print("Error in Calculation,date doesn't match")
       print(ISIN[i])
-      print(date)
+      print(date_tmp)
       print(MATURITYDATE[i])
       print(ISSUEDATE[i])
-      
+      k=k+j-1
     }
+      
   }
   
   CASHFLOWS = list(ISIN=CASHFLOW_ISIN,CF=CASHFLOW_CF,DATE=CASHFLOW_DATE)
@@ -686,6 +709,4 @@ InitTFPrice = function(bonddata,group,QuoteTF)
   }
   bonddata
 }
-
-
 
