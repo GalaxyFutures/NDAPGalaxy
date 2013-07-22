@@ -2,8 +2,8 @@
 
 BondInfo = ResetToday(BondInfo,"GOV","2012-11-1",FALSE,FALSE,TRUE)
 
-
-QuoteMoneyMarket = GetQuoteMoneyMarketFromMongoDb("R001","average")
+#长时间不调用mongodb会断开
+#QuoteMoneyMarket = GetQuoteMoneyMarketFromMongoDb("R001","average")
 
 BondInfo = AddTFInfo(BondInfo,"GOV",TFInfo)
 BondInfo = InitBondPrice(BondInfo,"GOV",QuoteBond)

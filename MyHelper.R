@@ -637,6 +637,8 @@ InitBondPrice = function(bondinfo,group,QuoteBond,BondYTMBasis = 0)
   YTM = NULL
   for(i in 1:length(bondinfo[[group]]$ISIN))
   {
+    print(i)
+    print(bondName)
     #bondName = paste("Bond",bondinfo[[group]]$ISIN[i],sep="")
     bondName = bondinfo[[group]]$ISIN[i]
     idx      = which(QuoteBond[[bondName]]$date == bondinfo[[group]]$TODAY)
@@ -649,6 +651,7 @@ InitBondPrice = function(bondinfo,group,QuoteBond,BondYTMBasis = 0)
     {
       YTM[i] = -100
     } 
+       
   }
   bondinfo[[group]]$YTM = YTM
   YTM = YTM / 100

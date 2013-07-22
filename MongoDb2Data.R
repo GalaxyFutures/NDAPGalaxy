@@ -95,6 +95,8 @@ GetTreasureInfosFromMongo = function ()
   cols    
 }
 
+#返回TFBONDEX中的国债信息
+#其中国债是历届TF的可交割债券
 GetUsefulTreasureInfosFromMongo = function () 
 {  
   rows = GetRowsFromMongo_Tool(ndapdb,"NDAP.TFBONDEX",F)  
@@ -112,6 +114,7 @@ GetUsefulTreasureInfosFromMongo = function ()
 }
 
 #返回R1MR3M
+#[Obsolete("You should not use this fn to get repo datas as this fn get data from an obsolete db.")]
 GetR1MR3MFromMongo = function()
 {
   strNS = paste("NDAP","R1MR3M",sep=".");
