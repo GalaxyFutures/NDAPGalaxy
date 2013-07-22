@@ -21,3 +21,20 @@ GetYM = function( arg_dates)
   
   as.Date(ISOdate(p$year+1900,p$mon+1,1))
 }
+
+
+SetQuoteMoneyMarket = function(arg_date, arg_dNewData, arg_quotemoneymarket)
+{
+  i = which(arg_quotemoneymarket$date == arg_date)  
+  arg_quotemoneymarket$R1M[[i]]=arg_dNewData
+  arg_quotemoneymarket
+}
+
+
+
+SetTFData = function(arg_TFName, arg_date,arg_strColumnName, arg_dNewData, arg_QuoteTF)
+{
+  i = which( arg_QuoteTF[[arg_TFName]]$date == arg_date)  
+  arg_QuoteTF[[arg_TFName]][[arg_strColumnName]][[i]]=arg_dNewData
+  arg_QuoteTF
+}
