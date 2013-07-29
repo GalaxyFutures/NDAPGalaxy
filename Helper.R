@@ -190,62 +190,36 @@ InitGovBondInfo = function(GovBondInfo)
   
   k=0
   
+  #付息频率可以是1,2,4,12次，可扩展
+  freq=c(1,2,4,12)
+  forward_interval=c("1 year","6 month","3 month","month")
+  backward_interval=c("-1 year","-6 month","-3 month","-1 month")
+  Time_interval= data.frame(rbind(freq,forward_interval,backward_interval))
+  Time_interval.row.names=c("freq","forward_interval","backward_interval")
+  
   for( i in  1:length(ISIN))
   {
     j = 1
-    if( FREQUENCY[i] == 1 )
-    {
-      date_tmp = seq(ISSUEDATE[i],by = "1 year", length = j+1)[j+1]
-      while(seq(date_tmp,by = "-1 year", length = j+1)[j+1]>ISSUEDATE[i])
-        date_tmp=date_tmp-1
-    }
-    else if( FREQUENCY[i] == 2 )
-    {
-      date_tmp = seq(ISSUEDATE[i],by = "6 month", length = j+1)[j+1]
-      while(seq(date_tmp,by = "-6 months", length = j+1)[j+1]>ISSUEDATE[i])
-        date_tmp=date_tmp-1
-    }
-    else
-      cat("Error in data,FREQUENCY is not 1 or 2")
-    
-    
+    date_tmp = seq(ISSUEDATE[i],by = as.character(Time_interval["forward_interval",freq==FREQUENCY[i]]), length = j+1)[j+1]
+    while(seq(date_tmp,by = as.character(Time_interval["backward_interval",freq==FREQUENCY[i]]), length = j+1)[j+1]>ISSUEDATE[i])
+      date_tmp=date_tmp-1
+        
     while(date_tmp < MATURITYDATE[i])
     {
-      if( FREQUENCY[i] == 1 )
-        CASHFLOW_CF[k+j]    = COUPONRATE[i]*100
-      else if( FREQUENCY[i] == 2 )
-        CASHFLOW_CF[k+j]    = COUPONRATE[i]*100/2
-      else
-        cat("Error in data,FREQUENCY is not 1 or 2")
+      CASHFLOW_CF[k+j]    = COUPONRATE[i]*100/FREQUENCY[i]
       CASHFLOW_DATE[k+j]  = date_tmp
       CASHFLOW_ISIN[k+j]  = ISIN[i]
       
       j=j+1
       
-      if( FREQUENCY[i] == 1 )
-      {
-        date_tmp = seq(ISSUEDATE[i],by = "1 year", length = j+1)[j+1]
-        while(seq(date_tmp,by = "-1 year", length = j+1)[j+1]>ISSUEDATE[i])
-          date_tmp=date_tmp-1
-      }
-      else if( FREQUENCY[i] == 2 )
-      {
-        date_tmp = seq(ISSUEDATE[i],by = "6 month", length = j+1)[j+1]
-        while(seq(date_tmp,by = "-6 months", length = j+1)[j+1]>ISSUEDATE[i])
-          date_tmp=date_tmp-1
-      }
-      else
-        cat("Error in data,FREQUENCY is not 1 or 2")
+      date_tmp = seq(ISSUEDATE[i],by = as.character(Time_interval["forward_interval",freq==FREQUENCY[i]]), length = j+1)[j+1]
+      while(seq(date_tmp,by = as.character(Time_interval["backward_interval",freq==FREQUENCY[i]]), length = j+1)[j+1]>ISSUEDATE[i])
+        date_tmp=date_tmp-1
     }
     
     if(date_tmp == MATURITYDATE[i])
     {
-      if( FREQUENCY[i] == 1 )
-        CASHFLOW_CF[k+j]    = COUPONRATE[i]*100+100
-      else if( FREQUENCY[i] == 2 )
-        CASHFLOW_CF[k+j]    = COUPONRATE[i]*100/2+100
-      else
-        cat("Error in data,FREQUENCY is not 1 or 2")
+      CASHFLOW_CF[k+j]    = COUPONRATE[i]*100/FREQUENCY[i]+100
       CASHFLOW_DATE[k+j]  = date_tmp
       CASHFLOW_ISIN[k+j]  = ISIN[i]
       k=k+j
@@ -358,8 +332,9 @@ CalculateTFParam = function(bonddata,group,TFInfo,i)
 {
   SettlementDate = TFInfo$settlementDate[i]
   TFNAME         = TFInfo$TFname[i]
- 
-  temp = ResetToday(bonddata,group, SettlementDate,FALSE,FALSE,FALSE)
+  
+  #SettlementDate为最后交易日，算国债期货的应计利息时应算到最后交割日，故+5
+  temp = ResetToday(bonddata,group, SettlementDate+5,FALSE,FALSE,FALSE)
 
   cf1 = create_cashflows_matrix(temp[[group]])
   m1 = create_maturities_matrix_China(temp[[group]])
