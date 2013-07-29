@@ -7,7 +7,7 @@ QuoteMoneyMarket = GetQuoteMoneyMarketFromMongoDb("R001","average")
 
 
 
-BondInfo = ResetToday(BondInfo,"GOV","2012-9-17",FALSE,FALSE,TRUE)
+BondInfo = ResetToday(BondInfo,"GOV","2013-7-15",FALSE,FALSE,TRUE)
 
 
 
@@ -16,6 +16,8 @@ BondInfo = AddTFInfo(BondInfo,"GOV",TFInfo)
 BondInfo = InitBondPrice(BondInfo,"GOV",QuoteBond)
 BondInfo = InitTFPrice(BondInfo,"GOV",QuoteTF)
 
+#CF修改
+#CF修改结束
 BondInfo = CalculateExpectedTFPrice(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
 BondInfo = CalculateNetBasis(BondInfo,"GOV",TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket)
 BondInfo = CalculateIRR(BondInfo,"GOV",TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket)
