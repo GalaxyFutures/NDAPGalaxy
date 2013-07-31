@@ -432,7 +432,7 @@ CalculateExpectedTFPrice = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMa
   bonddata
 }
 ##########################################################################
-##    计算以各个现券为交割券时的内部收益率IRR
+##    计算以各个现券为交割券时的隐含回购利率IRR
 ##    注意需要经过resetToday调整后计算才正确                         #####
 CalculateIRR = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
@@ -498,6 +498,8 @@ CalculateIRR = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket
   TFIRR[which(daysToDelivery < 0)] = 0
   TFIRR[which(TFPrice == 0)] = 0
   
+  TFIRR = round(TFIRR *100,2)
+  
   dimnames(TFIRR) = list(TFInfo$TFname,bonddata[[group]]$ISIN)
   bonddata[[group]]$TFIRR = TFIRR
   bonddata
@@ -516,7 +518,7 @@ CalculateNetBasis = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyM
                 nr = length(TFInfo$TFname),
                 nc = length(bonddata[[group]]$ISIN),
                 byrow = FALSE)
-  netBasis = temp - TFPrice
+  netBasis = TFPrice - temp
   netBasis[which(TFPrice < 10)] = 0
   netBasis[which(temp == 0)] = 0
   
