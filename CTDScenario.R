@@ -24,6 +24,7 @@ CTDScenario = function(bonddata,group,QuoteBond,TFName,YtmShift)
   }
   
   BasisDiff = t(BasisDiff)
+  BasisDiff = round(BasisDiff,3)
   dimnames(BasisDiff) = list(bonddata[[group]]$ISIN,YtmShift)
   
   BasisDiff = data.frame(cbind(COUPONRATE=bonddata[[group]]$COUPONRATE*100,MATURITYDATE=bonddata[[group]]$MATURITYDATE,PRICE=bonddata[[group]]$PRICE,YTM=bonddata[[group]]$YTM,BasisDiff),check.names = TRUE)
