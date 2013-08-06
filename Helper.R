@@ -334,7 +334,8 @@ CalculateTFParam = function(bonddata,group,TFInfo,i)
   TFNAME         = TFInfo$TFname[i]
   
   #SettlementDate为最后交易日，算国债期货的应计利息时应算到最后交割日，故+5
-  temp = ResetToday(bonddata,group, SettlementDate+5,FALSE,FALSE,FALSE)
+  temp = bonddata
+  temp = ResetToday(temp,group, SettlementDate+5,FALSE,FALSE,TRUE)
 
   cf1 = create_cashflows_matrix(temp[[group]])
   m1 = create_maturities_matrix_China(temp[[group]])
@@ -437,8 +438,8 @@ CalculateExpectedTFPrice = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMa
 CalculateIRR = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
   ##读入行情数据
-  r = QuoteMoneyMarket$R1M[which(QuoteMoneyMarket$date == bonddata[[group]]$TODAY)]/100
-  r = r + MoneyMarketBasis
+  #r = QuoteMoneyMarket$R1M[which(QuoteMoneyMarket$date == bonddata[[group]]$TODAY)]/100
+  #r = r + MoneyMarketBasis
   bonddata = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
   bonddata = InitTFPrice(bonddata,group,QuoteTF)
   ##计算下两次付息时间矩阵
