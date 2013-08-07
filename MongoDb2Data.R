@@ -113,6 +113,24 @@ GetUsefulTreasureInfosFromMongo = function ()
   cols    
 }
 
+#返回某一只期货的可交割国债信息
+GetDeliveryTreasureInfosFromMongo = function (arg_strTFName) 
+{  
+  strCollect = paste("NDAP",arg_strTFName , "Bond", sep=".")
+  rows = GetRowsFromMongo_Tool(ndapdb,strCollect,F)  
+  
+  cols = Rows2Columns_Tool(rows)
+  
+  cols = list( cols$'_id',cols$Name,cols$issuedate,cols$maturitydate,cols$couponrate,cols$frequency)
+  names(cols)= c("code.IB","name" ,"issuedate","maturitydate","couponrate","frequency")
+  
+  
+  cols$issuedate= format( GetDate(cols$issuedate) ,format="%Y/%m/%d")
+  cols$maturitydate= format(GetDate(cols$maturitydate),format="%Y/%m/%d")
+  
+  cols    
+}
+
 #返回R1MR3M
 #[Obsolete("You should not use this fn to get repo datas as this fn get data from an obsolete db.")]
 GetR1MR3MFromMongo = function()
