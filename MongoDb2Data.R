@@ -7,6 +7,11 @@ InitMongoDb = function(arg_strAddress,arg_strUser,arg_strPass)
   ndapdb <<- mongo.create(host=arg_strAddress,username=arg_strUser,password=arg_strPass, db="NDAP")
 }
 
+InitNDAPMongoDb =function() 
+{
+  InitMongoDb("221.133.243.54:3401","NDAPReader","Reader@Galaxy")
+}
+
 
 #返回TFVarieties
 GetTFVarietiesFromMongo = function () 
