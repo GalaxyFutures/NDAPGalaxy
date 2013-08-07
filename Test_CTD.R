@@ -315,14 +315,7 @@ QuoteBond[['110002.IB']]$priceClean=c(102.5714)
 QuoteBond[['110002.IB']]$YTM=c(3.5471)
 QuoteBond[['110002.IB']]$duration=c(6.25)
 QuoteBond[['110002.IB']]$convexity=c(49.222)
-BondInfo = ResetToday(BondInfo,"GOV","2013-07-15",FALSE,FALSE,TRUE)
-ytmshift<-c(-100,-50,0,50,100)
-result = CTDScenario(BondInfo,"GOV",QuoteBond,"TF1403",ytmshift)
-#输入一：日期
-today = as.Date("2013/07/15","%Y/%m/%d")
 
-#输入二：YtmShift
-YtmShift = c(-100,-50,0,50,100)
 
 #输入三：选定某个国债期货
 TFName = "TF1403"
