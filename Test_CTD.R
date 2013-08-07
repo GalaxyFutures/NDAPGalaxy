@@ -325,6 +325,6 @@ BondInfo_temp = ResetToday(BondInfo_temp,"GOV",today,FALSE,FALSE,TRUE)
 BondInfo_temp = AddTFInfo(BondInfo_temp,"GOV",TFInfo)
 BondInfo_temp = InitBondPrice(BondInfo_temp,"GOV",QuoteBond)
 
-BasisDiff = CTDScenario(BondInfo_temp,"GOV",QuoteBond,QuoteTF,QuoteMoneyMarket,TFName,YtmShift)
+BasisDiff = CTDScenario(BondInfo_temp,"GOV",QuoteBond,QuoteTF,TFInfo,QuoteMoneyMarket,TFName,YtmShift)
 
 BasisDiff
