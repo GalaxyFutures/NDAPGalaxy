@@ -1,19 +1,20 @@
 ###############################################################################################
 Bondytm2DurationConvexity = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRate,ytm单位%
 {
-  price = Bondytm2PRICE(couponRate,issueDate,endDate,freq,today,ytm)
-  price_add = Bondytm2PRICE(couponRate,issueDate,endDate,freq,today,ytm+0.01)
-  price_subtract = Bondytm2PRICE(couponRate,issueDate,endDate,freq,today,ytm-0.01)
+  accrued = Bondytm2price(couponRate,issueDate,endDate,freq,today,ytm)[2]
+  price = Bondytm2price(couponRate,issueDate,endDate,freq,today,ytm)[1] + accrued
+  price_add = Bondytm2price(couponRate,issueDate,endDate,freq,today,ytm+0.01)[1] + accrued
+  price_subtract = Bondytm2price(couponRate,issueDate,endDate,freq,today,ytm-0.01)[1] + accrued
   Duration = (price_subtract - price_add)/price/0.02*100
   #Convexity
-  Duration_add = (price - Bondytm2PRICE(couponRate,issueDate,endDate,freq,today,ytm+0.02))/price_add/0.02*100
-  Duration_subtract = (Bondytm2PRICE(couponRate,issueDate,endDate,freq,today,ytm-0.02) - price)/price_subtract/0.02*100
+  Duration_add = (price - Bondytm2price(couponRate,issueDate,endDate,freq,today,ytm+0.02)[1] - accrued)/price_add/0.02*100
+  Duration_subtract = (Bondytm2price(couponRate,issueDate,endDate,freq,today,ytm-0.02)[1] + accrued - price)/price_subtract/0.02*100
   Convexity = Duration * Duration - (Duration_add-Duration_subtract)/0.0002
   result = c(Duration,Convexity)
   result
 }
 
-Bondytm2PRICE = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRate,ytm单位%
+Bondytm2price = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRate,ytm单位%
 {
   ytm = ytm / 100
   issueDate = as.Date(issueDate)
@@ -49,7 +50,7 @@ Bondytm2PRICE = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRat
     cf_p = matrix(cf_p,byrow = TRUE)
     m_p = matrix(m_p,byrow = TRUE)
     
-    PRICE = bond_pricesDirty_China(cf_p, m_p, ytm, freq) - ACCRUED
+    price = bond_pricesDirty_China(cf_p, m_p, ytm, freq) - ACCRUED
   }
   
   if (freq == 2)
@@ -81,7 +82,7 @@ Bondytm2PRICE = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRat
     cf_p = matrix(cf_p,byrow = TRUE)
     m_p = matrix(m_p,byrow = TRUE)
     
-    PRICE = bond_pricesDirty_China(cf_p, m_p, ytm, freq) - ACCRUED
+    price = bond_pricesDirty_China(cf_p, m_p, ytm, freq) - ACCRUED
   }
   
   if (freq == -1)
@@ -99,17 +100,18 @@ Bondytm2PRICE = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRat
     cf_p = matrix(cf_p,byrow = TRUE)
     m_p = matrix(m_p,byrow = TRUE)
   
-    PRICE = bond_pricesDirty_China(cf_p, m_p, ytm, 1) - ACCRUED
+    price = bond_pricesDirty_China(cf_p, m_p, ytm, 1) - ACCRUED
   }
   
   
   ##设置数据精度
-  #PRICE = round(PRICE,4)
-  PRICE
+  #price = round(price,4)
+  result = c(price,ACCRUED)
+  result
 }
 
 
-BondPRICE2ytm = function(couponRate,issueDate,endDate,freq,today,PRICE)
+Bondprice2ytm = function(couponRate,issueDate,endDate,freq,today,price)
 {  
   issueDate = as.Date(issueDate)
   endDate = as.Date(endDate)
@@ -183,7 +185,7 @@ BondPRICE2ytm = function(couponRate,issueDate,endDate,freq,today,PRICE)
   
   cf_p = matrix(cf_p,byrow = TRUE)
   m_p = matrix(m_p,byrow = TRUE)
-  cf_p = rbind(-PRICE-ACCRUED,cf_p)
+  cf_p = rbind(-price-ACCRUED,cf_p)
   m_p = rbind(0,m_p)
   
   bondyields = bond_yields_China(cf_p,m_p)
