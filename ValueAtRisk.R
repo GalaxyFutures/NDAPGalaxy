@@ -5,7 +5,7 @@
 CalculateVaR = function(priceVector,quantileLevel,currentPrice,historicMethod = TRUE)
 {
   length = length(priceVector)
-  returnVector = priceVector[-1]/priceVector[-100] -1
+  returnVector = priceVector[-1]/priceVector[-length] -1
   quantle = quantile(returnVector,quantileLevel)
   VaR = -1 * quantle * currentPrice
   VaR
