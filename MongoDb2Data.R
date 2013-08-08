@@ -7,6 +7,11 @@ InitMongoDb = function(arg_strAddress,arg_strUser,arg_strPass)
   ndapdb <<- mongo.create(host=arg_strAddress,username=arg_strUser,password=arg_strPass, db="NDAP")
 }
 
+InitNDAPDb =function() 
+{
+  InitMongoDb("221.133.243.54:3401","NDAPReader","Reader@Galaxy")
+}
+
 
 #返回TFVarieties
 GetTFVarietiesFromMongo = function () 
@@ -100,6 +105,24 @@ GetTreasureInfosFromMongo = function ()
 GetUsefulTreasureInfosFromMongo = function () 
 {  
   rows = GetRowsFromMongo_Tool(ndapdb,"NDAP.TFBONDEX",F)  
+  
+  cols = Rows2Columns_Tool(rows)
+  
+  cols = list( cols$'_id',cols$Name,cols$issuedate,cols$maturitydate,cols$couponrate,cols$frequency)
+  names(cols)= c("code.IB","name" ,"issuedate","maturitydate","couponrate","frequency")
+  
+  
+  cols$issuedate= format( GetDate(cols$issuedate) ,format="%Y/%m/%d")
+  cols$maturitydate= format(GetDate(cols$maturitydate),format="%Y/%m/%d")
+  
+  cols    
+}
+
+#返回某一只期货的可交割国债信息
+GetDeliveryTreasureInfosFromMongo = function (arg_strTFName) 
+{  
+  strCollect = paste("NDAP",arg_strTFName , "Bond", sep=".")
+  rows = GetRowsFromMongo_Tool(ndapdb,strCollect,F)  
   
   cols = Rows2Columns_Tool(rows)
   

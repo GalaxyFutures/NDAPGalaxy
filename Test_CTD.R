@@ -159,9 +159,16 @@ QuoteBond[['130013.IB']]$priceClean=c(98.5089)
 QuoteBond[['130013.IB']]$YTM=c(3.4261)
 QuoteBond[['130013.IB']]$duration=c(4.4287)
 QuoteBond[['130013.IB']]$convexity=c(24.6476)
+
+
+tfname = "TF1403"
+InitNDAPDb()
+TFInfo = GetTFVarietiesFromMongo()
+DbBondInfo = GetDeliveryTreasureInfosFromMongo(tfname)
+BondInfo = InitGovBondInfo( DbBondInfo )
 BondInfo = ResetToday(BondInfo,"GOV","2013-07-15",FALSE,FALSE,TRUE)
 BondInfo = AddTFInfo(BondInfo,"GOV",TFInfo)
 BondInfo = InitBondPrice(BondInfo,"GOV",QuoteBond)
 BondInfo = InitTFPrice(BondInfo,"GOV",QuoteTF)
 ytmshift<-c(-100,-50,0,50,100)
-result = CTDScenario(BondInfo,"GOV",QuoteBond,QuoteTF,TFInfo,QuoteMoneyMarket,"TF1403",ytmshift)
+result = CTDScenario(BondInfo,"GOV",QuoteBond,QuoteTF,TFInfo,QuoteMoneyMarket,tfname,ytmshift)
