@@ -42,7 +42,7 @@ issueDate = "2001/06/06"
 endDate = "2016/06/06"
 freq = 2
 today = "2013/04/10"
-price = 3.0389
+price = 150
 result = Bondprice2ytm(couponRate,issueDate,endDate,freq,today,price)
 
 
