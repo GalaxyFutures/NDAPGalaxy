@@ -2,7 +2,7 @@ library("termstrc")
 #######################################################################
 ############ 中国版计算方式,不算连续复利，而是按年付息 ################
 ############ 计算收益率、价格、久期的三个函数          ################
-bond_yields_China = function (cashflows, m, searchint = c(-1, 1), tol = 1e-10) 
+bond_yields_China = function (cashflows, m, searchint = c(0, 10), tol = 1e-10) 
 { 
   
   if (!is.matrix(cashflows)) 
@@ -15,9 +15,10 @@ bond_yields_China = function (cashflows, m, searchint = c(-1, 1), tol = 1e-10)
     pvcashflows <- function(y) {
       t(cashflows[, i]) %*% (1/(1+y)^m[, i])##这里修改了，将连续复利改为按年计息
     }
-    bondyields[i, 2] <- uniroot(pvcashflows, searchint, tol = tol, 
+    bondyields[i, 2] <- uniroot(pvcashflows, searchint,tol = tol, 
                                 maxiter = 3000)$root
   }
+  
   rownames(bondyields) <- colnames(cashflows)
   colnames(bondyields) <- c("Maturity", "Yield")
   bondyields
