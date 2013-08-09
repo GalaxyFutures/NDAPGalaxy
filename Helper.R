@@ -2,9 +2,8 @@ library("termstrc")
 #######################################################################
 ############ 中国版计算方式,不算连续复利，而是按年付息 ################
 ############ 计算收益率、价格、久期的三个函数          ################
-bond_yields_China = function (cashflows, m, searchint = c(0, 10), tol = 1e-10) 
+bond_yields_China = function (cashflows, m, searchint = c(-0.9, 100), tol = 1e-10) 
 { 
-  
   if (!is.matrix(cashflows)) 
     cashflows <- as.matrix(cashflows)
   if (!is.matrix(m)) 
