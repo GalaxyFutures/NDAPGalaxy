@@ -6,8 +6,8 @@ QuoteMoneyMarket = GetQuoteMoneyMarketFromMongoDb("R001","average")
 #上面的代码只需要运行一次即可
 
 
-
-BondInfo = ResetToday(BondInfo,"GOV","2013-7-15",FALSE,FALSE,TRUE)
+BondInfo = InitGovBondInfo( DbBondInfo )
+BondInfo = ResetToday(BondInfo,"GOV","2013-8-1",FALSE,FALSE,TRUE)
 
 
 
