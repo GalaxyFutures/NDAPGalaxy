@@ -29,6 +29,10 @@ bond_pricesDirty_China = function (cf_p, m_p, y, frequency)
   y <- matrix(rep(y, nrow(m_p)), ncol = ncol(m_p), byrow = TRUE)
   d <- cf_p / (1+y)^m_p
   price = apply(d,2,"sum")
+  for (j in 1:length(frequency))
+  {
+    if (m_p[1,j]==0) price[j] = price[j] - cf_p[1,j]
+  }
   price
 }
 ##根据YTM计算bond的现价(净价)
