@@ -25,7 +25,7 @@ Bondytm2price = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRat
   {
     i = 1  
     nextPaymentDate = issueDate
-    while (nextPaymentDate<today)
+    while (nextPaymentDate<=today)
     {
       nextPaymentDate = seq(issueDate,by ="1 year",length = i+1)[i+1]
       i = i+1
@@ -45,7 +45,10 @@ Bondytm2price = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRat
               by = 1, length = i)
     cf_p = rep(couponRate/freq,i)
     cf_p[i]=100+couponRate/freq
-    ACCRUED = (couponRate/freq) * (1 - m_p[1])
+    
+    #如果当天是付息日则应计利息定为0
+    ACCRUED = 0
+    if(m_p[1]!=0) ACCRUED = (couponRate/freq) * (1 - m_p[1])
     
     cf_p = matrix(cf_p,byrow = TRUE)
     m_p = matrix(m_p,byrow = TRUE)
@@ -57,7 +60,7 @@ Bondytm2price = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRat
   {
     i = 1   
     nextPaymentDate = issueDate
-    while (nextPaymentDate<today)
+    while (nextPaymentDate<=today)
     {
       nextPaymentDate = seq(issueDate,by ="6 month",length = i+1)[i+1]
       i = i+1
@@ -77,7 +80,10 @@ Bondytm2price = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRat
                by = 1, length = i)
     cf_p = rep(couponRate/freq,i)
     cf_p[i]=100+couponRate/freq
-    ACCRUED = (couponRate/freq) * (1 - m_p[1])
+    
+    #如果当天是付息日则应计利息定为0
+    ACCRUED = 0
+    if(m_p[1]!=0) ACCRUED = (couponRate/freq) * (1 - m_p[1])
     
     cf_p = matrix(cf_p,byrow = TRUE)
     m_p = matrix(m_p,byrow = TRUE)
@@ -94,8 +100,10 @@ Bondytm2price = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRat
               by = 1, length = 1)
     cf_p = rep(0,1)
     cf_p[1]=100+couponRate/365*as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate),units = "days"))
-    ACCRUED = couponRate/365*as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate),units = "days")) * (1 - m_p[1])
-  
+    
+    #如果当天是付息日则应计利息定为0
+    ACCRUED = 0
+    if(m_p[1]!=0) ACCRUED = couponRate/365*as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate),units = "days")) * (1 - m_p[1])
   
     cf_p = matrix(cf_p,byrow = TRUE)
     m_p = matrix(m_p,byrow = TRUE)
@@ -121,7 +129,7 @@ Bondprice2ytm = function(couponRate,issueDate,endDate,freq,today,price)
   {
     i = 1  
     nextPaymentDate = issueDate
-    while (nextPaymentDate<today)
+    while (nextPaymentDate<=today)
     {
       nextPaymentDate = seq(issueDate,by ="1 year",length = i+1)[i+1]
       i = i+1
@@ -141,14 +149,16 @@ Bondprice2ytm = function(couponRate,issueDate,endDate,freq,today,price)
               by = 1, length = i)
     cf_p = rep(couponRate/freq,i)
     cf_p[i]=100+couponRate/freq
-    ACCRUED = (couponRate/freq) * (1 - m_p[1])
+    #如果当天是付息日则应计利息定为0
+    ACCRUED = 0
+    if(m_p[1]!=0) ACCRUED = (couponRate/freq) * (1 - m_p[1])
   }
   
   if (freq == 2)
   {
     i = 1   
     nextPaymentDate = issueDate
-    while (nextPaymentDate<today)
+    while (nextPaymentDate<=today)
     {
       nextPaymentDate = seq(issueDate,by ="6 month",length = i+1)[i+1]
       i = i+1
@@ -168,7 +178,9 @@ Bondprice2ytm = function(couponRate,issueDate,endDate,freq,today,price)
               by = 1, length = i)
     cf_p = rep(couponRate/freq,i)
     cf_p[i]=100+couponRate/freq
-    ACCRUED = (couponRate/freq) * (1 - m_p[1])
+    #如果当天是付息日则应计利息定为0
+    ACCRUED = 0
+    if(m_p[1]!=0) ACCRUED = (couponRate/freq) * (1 - m_p[1])
   }
   
   if (freq == -1)
@@ -180,7 +192,9 @@ Bondprice2ytm = function(couponRate,issueDate,endDate,freq,today,price)
               by = 1, length = 1)
     cf_p = rep(0,1)
     cf_p[1]=100+couponRate/365*as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate),units = "days"))
-    ACCRUED = couponRate/365*as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate),units = "days")) * (1 - m_p[1])
+    #如果当天是付息日则应计利息定为0
+    ACCRUED = 0
+    if(m_p[1]!=0) ACCRUED = couponRate/365*as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate),units = "days")) * (1 - m_p[1])
   }   
   
   cf_p = matrix(cf_p,byrow = TRUE)
@@ -192,7 +206,8 @@ Bondprice2ytm = function(couponRate,issueDate,endDate,freq,today,price)
   ytm = bondyields[,2]*100*freq
 
   #ytm=round(ytm,4)
-  ytm
+  result = c(ytm,ACCRUED)
+  result
 }
 
 
