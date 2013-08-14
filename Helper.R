@@ -640,14 +640,37 @@ InitBondPrice = function(bondinfo,group,QuoteBond,BondYTMBasis = 0)
   bondinfo[[group]]$PRICE = bond_pricesClean_China(cf_p, m_p, YTM, bondinfo[[group]]$FREQUENCY)
   bondinfo[[group]]$ACCRUED = bond_pricesDirty_China(cf_p, m_p, YTM, bondinfo[[group]]$FREQUENCY)-bondinfo[[group]]$PRICE
   
+  MOD_DURATION = bondinfo[[group]]$PRICE
+  CONVEXITY = bondinfo[[group]]$PRICE
+    
+  for(i in 1:length(bondinfo[[group]]$ISIN))
+  {
+    couponRate = bondinfo[[group]]$COUPONRATE[i] * 100
+    issueDate = bondinfo[[group]]$ISSUEDATE[i]
+    endDate = bondinfo[[group]]$MATURITYDATE[i]
+    freq = bondinfo[[group]]$FREQUENCY[i]
+    today = bondinfo[[group]]$TODAY
+    ytm = YTM[i] *100
+    
+    result = Bondytm2DurationConvexity(couponRate,issueDate,endDate,freq,today,ytm)
+    MOD_DURATION[i] = result[1]
+    CONVEXITY[i] = result[2]
+  }
+  bondinfo[[group]]$MOD_DURATION = MOD_DURATION
+  bondinfo[[group]]$CONVEXITY = CONVEXITY
+  
   ##将缺失数据部分设置为0
   bondinfo[[group]]$PRICE[which(YTM==-1)] = 0
   bondinfo[[group]]$ACCRUED[which(YTM==-1)] = 0
+  bondinfo[[group]]$MOD_DURATION[which(YTM==-1)] = 0
+  bondinfo[[group]]$CONVEXITY[which(YTM==-1)] = 0
   bondinfo[[group]]$YTM[which(YTM==-1)] = 0
   
   ##设置数据精度
   bondinfo[[group]]$PRICE = round(bondinfo[[group]]$PRICE,4)
   bondinfo[[group]]$ACCRUED = round(bondinfo[[group]]$ACCRUED,4)
+  bondinfo[[group]]$MOD_DURATION = round(bondinfo[[group]]$MOD_DURATION,4)
+  bondinfo[[group]]$CONVEXITY = round(bondinfo[[group]]$CONVEXITY,4)
   bondinfo
 }
 ## 直接读取的方法。但因为中证的应计利息计算方式与中债不同，暂不采取直接读取的方式
