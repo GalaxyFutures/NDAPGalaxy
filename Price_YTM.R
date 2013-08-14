@@ -95,9 +95,7 @@ Bondytm2price = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRat
   {
     nextPaymentDate = endDate
     lastPaymentDate = issueDate
-    m_p = seq(as.numeric(difftime(as.Date(nextPaymentDate), as.Date(today), units = "days"))
-              /as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate), units = "days")),
-              by = 1, length = 1)
+    m_p = seq(as.numeric(difftime(as.Date(nextPaymentDate), as.Date(today), units = "days"))/365, by = 1, length = 1)
     cf_p = rep(0,1)
     cf_p[1]=100+couponRate/365*as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate),units = "days"))
     
@@ -187,9 +185,7 @@ Bondprice2ytm = function(couponRate,issueDate,endDate,freq,today,price)
   {
     nextPaymentDate = endDate
     lastPaymentDate = issueDate
-    m_p = seq(as.numeric(difftime(as.Date(nextPaymentDate), as.Date(today), units = "days"))
-              /as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate), units = "days")),
-              by = 1, length = 1)
+    m_p = seq(as.numeric(difftime(as.Date(nextPaymentDate), as.Date(today), units = "days"))/365,by = 1, length = 1)
     cf_p = rep(0,1)
     cf_p[1]=100+couponRate/365*as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate),units = "days"))
     #如果当天是付息日则应计利息定为0
