@@ -46,10 +46,10 @@ bond_pricesClean_China = function (cf_p, m_p, y, frequency)
   price
 }
 ##计算基点价值
-InitBPV = function(bonddata, group, QuoteBond) 
+InitBPV = function(bonddata, group) 
 {
-  PRICE_YTMup1BP   = CalculateBondPrice(bonddata,group,QuoteBond,BondYTMBasis = 0.0001)
-  PRICE_YTMdown1BP = CalculateBondPrice(bonddata,group,QuoteBond,BondYTMBasis = -0.0001)
+  PRICE_YTMup1BP   = CalculateBondPrice(bonddata,group,BondYTMBasis = 0.0001)
+  PRICE_YTMdown1BP = CalculateBondPrice(bonddata,group,BondYTMBasis = -0.0001)
   BPV = (PRICE_YTMdown1BP - PRICE_YTMup1BP)/2*10000
   
   bonddata[[group]]$BPV = BPV
@@ -407,7 +407,7 @@ CalculateFVcoupon = function(bonddata,group,TFInfo,r)
 ##    计算以各个现券为交割券时，无套利模型下期货的理论定价
 ##    注意需要经过resetToday调整后计算才正确                         #####
 #group:"GOV"债券分类
-CalculateExpectedTFPrice = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
+CalculateExpectedTFPrice = function(bonddata,group,TFInfo,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
   ##读入行情数据
   r = QuoteMoneyMarket$R1M[which(QuoteMoneyMarket$date == bonddata[[group]]$TODAY)]/100
@@ -417,7 +417,7 @@ CalculateExpectedTFPrice = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMa
   #bonddata = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
   #bonddata = InitTFPrice(bonddata,group,QuoteTF)
   
-  bonddata[[group]]$PRICE = CalculateBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
+  bonddata[[group]]$PRICE = CalculateBondPrice(bonddata,group,BondYTMBasis)
   
   FVcoupon = CalculateFVcoupon(bonddata,group,TFInfo,r)
   daysToDelivery = matrix(data = TFInfo$settlementDate - as.Date(bonddata[[group]]$TODAY),
@@ -442,10 +442,8 @@ CalculateExpectedTFPrice = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMa
 ##########################################################################
 ##    计算以各个现券为交割券时的隐含回购利率IRR
 ##    注意需要经过resetToday调整后计算才正确                         #####
-CalculateIRR = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
+CalculateIRR = function(bonddata,group,TFInfo,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
-  #bonddata = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
-  #bonddata = InitTFPrice(bonddata,group,QuoteTF)
   ##计算下两次付息时间矩阵
   n_of_cf <- summary(factor(bonddata[[group]]$CASHFLOWS$ISIN, levels = bonddata[[group]]$ISIN), maxsum = 1000)
   pos_cf <- c(0, cumsum(n_of_cf))
@@ -512,17 +510,17 @@ CalculateIRR = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTM
 ##########################################################################
 ##    计算以各个现券为交割券时的净基差NetBasis
 ##    注意需要经过resetToday后计算才正确                 #####
-CalculateNetBasis = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
+CalculateNetBasis = function(bonddata,group,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
   #已经在之前调用了CalculateExpectedTFPrice函数
-  #bonddata = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis,MoneyMarketBasis)
+  #bonddata = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteMoneyMarket,BondYTMBasis,MoneyMarketBasis)
   
   #现货价格
   expectedTFPrice = bonddata[[group]]$expectedTFPrice
   
   #temp：期货价格
   temp = matrix(data = bonddata[[group]]$TFprice,
-                nr = length(TFInfo$TFname),
+                nr = length(bonddata[[group]]$TFprice),
                 nc = length(bonddata[[group]]$ISIN),
                 byrow = FALSE)
   netBasis = expectedTFPrice - temp
@@ -536,7 +534,7 @@ CalculateNetBasis = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,Bo
 ##bonddata = BondInfo
 ##group = "GOV"
 #####################
-FindCTD = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
+FindCTD = function(bonddata,group,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
   #已经计算TFIRR
   TFIRR = bonddata[[group]]$TFIRR
@@ -548,19 +546,19 @@ FindCTD = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis
   temp[which(is.na(temp))] = -2000
   maxIRR = apply(temp,1,"max")
   maxIRR = matrix(data = maxIRR,
-                  nr = length(TFInfo$TFname),
+                  nr = length(bonddata[[group]]$TFname),
                   nc = length(bonddata[[group]]$ISIN),
                   byrow = FALSE)
   
   ##这里有个小bug，默认任何两个TFIRR不应该有相等的情况。如果出现相等，将造成length(idx)==2,选不出CTD
   ##这个bug已更改（TFIRR的精度已提高，不会出现相等）
-  CTDBond = colnames(TFIRR)[(which(TFIRR - maxIRR == 0)-1) %/% length(TFInfo$TFname)+1]
-  CTDTF   = rownames(TFIRR)[(which(TFIRR - maxIRR == 0)-1) %% length(TFInfo$TFname)+1]
+  CTDBond = colnames(TFIRR)[(which(TFIRR - maxIRR == 0)-1) %/% length(bonddata[[group]]$TFname)+1]
+  CTDTF   = rownames(TFIRR)[(which(TFIRR - maxIRR == 0)-1) %% length(bonddata[[group]]$TFname)+1]
   
   CTD = NULL
-  for( i in 1: length(TFInfo$TFname))
+  for( i in 1: length(bonddata[[group]]$TFname))
   {
-    idx = which(CTDTF == TFInfo$TFname[i])
+    idx = which(CTDTF == bonddata[[group]]$TFname[i])
     
     if(length(idx) == 1)
     {
@@ -578,13 +576,13 @@ FindCTD = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis
 }
 
 
-CalculateBPVTF = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket)
+CalculateBPVTF = function(bonddata,group,TFInfo,QuoteMoneyMarket)
 {
-  TFPrice_R1Mup1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,MoneyMarketBasis=0.0001)[[group]]$expectedTFPrice
-  TFPrice_R1Mdown1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,MoneyMarketBasis=-0.0001)[[group]]$expectedTFPrice
+  TFPrice_R1Mup1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteMoneyMarket,MoneyMarketBasis=0.0001)[[group]]$expectedTFPrice
+  TFPrice_R1Mdown1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteMoneyMarket,MoneyMarketBasis=-0.0001)[[group]]$expectedTFPrice
   
-  TFPrice_YTMup1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis=0.0001)[[group]]$expectedTFPrice
-  TFPrice_YTMdown1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis=-0.0001)[[group]]$expectedTFPrice
+  TFPrice_YTMup1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteMoneyMarket,BondYTMBasis=0.0001)[[group]]$expectedTFPrice
+  TFPrice_YTMdown1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteMoneyMarket,BondYTMBasis=-0.0001)[[group]]$expectedTFPrice
   
   BPV_YTM = (TFPrice_YTMdown1BP - TFPrice_YTMup1BP)/2*10000
   BPV_R1M = (TFPrice_R1Mdown1BP - TFPrice_R1Mup1BP)/2*10000
@@ -681,26 +679,10 @@ InitBondPrice = function(bondinfo,group,QuoteBond,BondYTMBasis = 0)
 }
 
 ##########################################################################
-##    以QuoteBond里的YTM为参数+BondYTMBasis计算Bond Price, 返回价格(vector)
-CalculateBondPrice = function(bondinfo,group,QuoteBond,BondYTMBasis = 0)
+##    以bondinfo里的YTM为参数+BondYTMBasis计算Bond Price, 返回价格(vector)
+CalculateBondPrice = function(bondinfo,group,BondYTMBasis = 0)
 {
-  YTM = NULL
-  for(i in 1:length(bondinfo[[group]]$ISIN))
-  {
-    #bondName = paste("Bond",bondinfo[[group]]$ISIN[i],sep="")
-    bondName = bondinfo[[group]]$ISIN[i]
-    idx      = which(QuoteBond[[bondName]]$date == bondinfo[[group]]$TODAY)
-    
-    if(length(idx) == 1)
-    {
-      YTM[i] = QuoteBond[[bondName]]$YTM[idx]
-    }
-    else
-    {
-      YTM[i] = -100
-    } 
-  }
-  bondinfo[[group]]$YTM = YTM
+  YTM = bondinfo[[group]]$YTM
   YTM = YTM / 100
   YTM = YTM + BondYTMBasis
   cf_p = create_cashflows_matrix(bondinfo[[group]])
@@ -758,5 +740,216 @@ InitTFPrice = function(bonddata,group,QuoteTF)
     
   }
   bonddata
+}
+
+
+######################################################################################
+#计算单个券的price，duration，convexity
+######################################################################################
+Bondytm2DurationConvexity = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRate,ytm单位%
+{
+  accrued = Bondytm2price(couponRate,issueDate,endDate,freq,today,ytm)[2]
+  price = Bondytm2price(couponRate,issueDate,endDate,freq,today,ytm)[1] + accrued
+  price_add = Bondytm2price(couponRate,issueDate,endDate,freq,today,ytm+0.01)[1] + accrued
+  price_subtract = Bondytm2price(couponRate,issueDate,endDate,freq,today,ytm-0.01)[1] + accrued
+  Duration = (price_subtract - price_add)/price/0.02*100
+  #Convexity
+  Duration_add = (price - Bondytm2price(couponRate,issueDate,endDate,freq,today,ytm+0.02)[1] - accrued)/price_add/0.02*100
+  Duration_subtract = (Bondytm2price(couponRate,issueDate,endDate,freq,today,ytm-0.02)[1] + accrued - price)/price_subtract/0.02*100
+  Convexity = Duration * Duration - (Duration_add-Duration_subtract)/0.0002
+  result = c(Duration,Convexity)
+  result
+}
+
+Bondytm2price = function(couponRate,issueDate,endDate,freq,today,ytm) #couponRate,ytm单位%
+{
+  ytm = ytm / 100
+  issueDate = as.Date(issueDate)
+  endDate = as.Date(endDate)
+  today = as.Date(today)
+  
+  if (freq == 1)
+  {
+    i = 1  
+    nextPaymentDate = issueDate
+    while (nextPaymentDate<=today)
+    {
+      nextPaymentDate = seq(issueDate,by ="1 year",length = i+1)[i+1]
+      i = i+1
+    }
+    lastPaymentDate = seq(nextPaymentDate,by ="-1 year",length = 2)[2]
+    
+    i = 1
+    temp_date = nextPaymentDate
+    while (temp_date<endDate)
+    {
+      temp_date = seq(temp_date,by ="1 year",length = 2)[2]
+      i = i + 1
+    }
+    
+    m_p = seq(as.numeric(difftime(as.Date(nextPaymentDate), as.Date(today), units = "days"))
+              /as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate), units = "days")),
+              by = 1, length = i)
+    cf_p = rep(couponRate/freq,i)
+    cf_p[i]=100+couponRate/freq
+    
+    #如果当天是付息日则应计利息定为0
+    ACCRUED = 0
+    if(m_p[1]!=0) ACCRUED = (couponRate/freq) * (1 - m_p[1])
+    
+    cf_p = matrix(cf_p,byrow = TRUE)
+    m_p = matrix(m_p,byrow = TRUE)
+    
+    price = bond_pricesDirty_China(cf_p, m_p, ytm, freq) - ACCRUED
+  }
+  
+  if (freq == 2)
+  {
+    i = 1   
+    nextPaymentDate = issueDate
+    while (nextPaymentDate<=today)
+    {
+      nextPaymentDate = seq(issueDate,by ="6 month",length = i+1)[i+1]
+      i = i+1
+    }
+    lastPaymentDate = seq(nextPaymentDate,by ="-6 month",length = 2)[2]
+    
+    i = 1
+    temp_date = nextPaymentDate
+    while (temp_date<endDate)
+    {
+      temp_date = seq(temp_date,by ="6 month",length = 2)[2]
+      i = i + 1
+    }
+    
+    m_p = seq(as.numeric(difftime(as.Date(nextPaymentDate), as.Date(today), units = "days"))
+              /as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate), units = "days")),
+              by = 1, length = i)
+    cf_p = rep(couponRate/freq,i)
+    cf_p[i]=100+couponRate/freq
+    
+    #如果当天是付息日则应计利息定为0
+    ACCRUED = 0
+    if(m_p[1]!=0) ACCRUED = (couponRate/freq) * (1 - m_p[1])
+    
+    cf_p = matrix(cf_p,byrow = TRUE)
+    m_p = matrix(m_p,byrow = TRUE)
+    
+    price = bond_pricesDirty_China(cf_p, m_p, ytm, freq) - ACCRUED
+  }
+  
+  if (freq == -1)
+  {
+    nextPaymentDate = endDate
+    lastPaymentDate = issueDate
+    m_p = seq(as.numeric(difftime(as.Date(nextPaymentDate), as.Date(today), units = "days"))/365, by = 1, length = 1)
+    cf_p = rep(0,1)
+    cf_p[1]=100+couponRate/365*as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate),units = "days"))
+    
+    #如果当天是付息日则应计利息定为0
+    ACCRUED = 0
+    if(m_p[1]!=0) ACCRUED = couponRate/365*as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate),units = "days")) * (1 - m_p[1])
+    
+    cf_p = matrix(cf_p,byrow = TRUE)
+    m_p = matrix(m_p,byrow = TRUE)
+    
+    price = bond_pricesDirty_China(cf_p, m_p, ytm, 1) - ACCRUED
+  }
+  
+  
+  ##设置数据精度
+  #price = round(price,4)
+  result = c(price,ACCRUED)
+  result
+}
+
+
+Bondprice2ytm = function(couponRate,issueDate,endDate,freq,today,price)
+{  
+  issueDate = as.Date(issueDate)
+  endDate = as.Date(endDate)
+  today = as.Date(today)
+  
+  if (freq == 1)
+  {
+    i = 1  
+    nextPaymentDate = issueDate
+    while (nextPaymentDate<=today)
+    {
+      nextPaymentDate = seq(issueDate,by ="1 year",length = i+1)[i+1]
+      i = i+1
+    }
+    lastPaymentDate = seq(nextPaymentDate,by ="-1 year",length = 2)[2]
+    
+    i = 1
+    temp_date = nextPaymentDate
+    while (temp_date<endDate)
+    {
+      temp_date = seq(temp_date,by ="1 year",length = 2)[2]
+      i = i + 1
+    }
+    
+    m_p = seq(as.numeric(difftime(as.Date(nextPaymentDate), as.Date(today), units = "days"))
+              /as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate), units = "days")),
+              by = 1, length = i)
+    cf_p = rep(couponRate/freq,i)
+    cf_p[i]=100+couponRate/freq
+    #如果当天是付息日则应计利息定为0
+    ACCRUED = 0
+    if(m_p[1]!=0) ACCRUED = (couponRate/freq) * (1 - m_p[1])
+  }
+  
+  if (freq == 2)
+  {
+    i = 1   
+    nextPaymentDate = issueDate
+    while (nextPaymentDate<=today)
+    {
+      nextPaymentDate = seq(issueDate,by ="6 month",length = i+1)[i+1]
+      i = i+1
+    }
+    lastPaymentDate = seq(nextPaymentDate,by ="-6 month",length = 2)[2]
+    
+    i = 1
+    temp_date = nextPaymentDate
+    while (temp_date<endDate)
+    {
+      temp_date = seq(temp_date,by ="6 month",length = 2)[2]
+      i = i + 1
+    }
+    
+    m_p = seq(as.numeric(difftime(as.Date(nextPaymentDate), as.Date(today), units = "days"))
+              /as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate), units = "days")),
+              by = 1, length = i)
+    cf_p = rep(couponRate/freq,i)
+    cf_p[i]=100+couponRate/freq
+    #如果当天是付息日则应计利息定为0
+    ACCRUED = 0
+    if(m_p[1]!=0) ACCRUED = (couponRate/freq) * (1 - m_p[1])
+  }
+  
+  if (freq == -1)
+  {
+    nextPaymentDate = endDate
+    lastPaymentDate = issueDate
+    m_p = seq(as.numeric(difftime(as.Date(nextPaymentDate), as.Date(today), units = "days"))/365,by = 1, length = 1)
+    cf_p = rep(0,1)
+    cf_p[1]=100+couponRate/365*as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate),units = "days"))
+    #如果当天是付息日则应计利息定为0
+    ACCRUED = 0
+    if(m_p[1]!=0) ACCRUED = couponRate/365*as.numeric(difftime(as.Date(nextPaymentDate), as.Date(lastPaymentDate),units = "days")) * (1 - m_p[1])
+  }   
+  
+  cf_p = matrix(cf_p,byrow = TRUE)
+  m_p = matrix(m_p,byrow = TRUE)
+  cf_p = rbind(-price-ACCRUED,cf_p)
+  m_p = rbind(0,m_p)
+  
+  bondyields = bond_yields_China(cf_p,m_p)
+  ytm = bondyields[,2]*100*freq
+  
+  #ytm=round(ytm,4)
+  result = c(ytm,ACCRUED)
+  result
 }
 

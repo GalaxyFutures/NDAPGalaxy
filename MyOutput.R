@@ -16,18 +16,18 @@ BondInfo = InitTFPrice(BondInfo,"GOV",QuoteTF)
 
 #CF修改
 #CF修改结束
-BondInfo = CalculateExpectedTFPrice(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
+BondInfo = CalculateExpectedTFPrice(BondInfo,"GOV",TFInfo,QuoteMoneyMarket)
   
-BondInfo = CalculateNetBasis(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
+BondInfo = CalculateNetBasis(BondInfo,"GOV")
 
 #计算TFIRR
-BondInfo = CalculateIRR(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
+BondInfo = CalculateIRR(BondInfo,"GOV",TFInfo)
 
 #计算CTD（TFIRR方法）
-BondInfo = FindCTD(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
+BondInfo = FindCTD(BondInfo,"GOV")
 
 #计算Bond的BPV
-BondInfo = InitBPV(BondInfo,"GOV", QuoteBond) 
+BondInfo = InitBPV(BondInfo,"GOV") 
 
 #计算TF的BPV（调用CalculateExpectedTFPrice）
-BondInfo = CalculateBPVTF(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
+BondInfo = CalculateBPVTF(BondInfo,"GOV",TFInfo,QuoteMoneyMarket)
