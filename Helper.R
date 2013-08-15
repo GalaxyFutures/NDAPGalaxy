@@ -48,11 +48,9 @@ bond_pricesClean_China = function (cf_p, m_p, y, frequency)
 ##计算基点价值
 InitBPV = function(bonddata, group, QuoteBond) 
 {
-  #bonddata_before     = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis = 0)
-  bonddata_YTMup1BP   = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis = 0.0001)
-  bonddata_YTMdown1BP = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis = -0.0001)
-  BPV = (bonddata_YTMdown1BP[[group]]$PRICE+bonddata_YTMdown1BP[[group]]$ACCRUED-
-           bonddata_YTMup1BP[[group]]$PRICE-bonddata_YTMup1BP[[group]]$ACCRUED)/2*10000
+  PRICE_YTMup1BP   = CalculateBondPrice(bonddata,group,QuoteBond,BondYTMBasis = 0.0001)
+  PRICE_YTMdown1BP = CalculateBondPrice(bonddata,group,QuoteBond,BondYTMBasis = -0.0001)
+  BPV = (PRICE_YTMdown1BP - PRICE_YTMup1BP)/2*10000
   
   bonddata[[group]]$BPV = BPV
   bonddata
@@ -135,7 +133,7 @@ ResetToday = function(bonddata,group,today=Sys.Date(),removeNotIssued = TRUE,rem
       else
         i = i+1
     }
-    print("RemoveNotIssued Completed")
+    #print("RemoveNotIssued Completed")
   }
   ##Remove obsolete bond data
   if( removeObsoleteBond )
@@ -150,13 +148,13 @@ ResetToday = function(bonddata,group,today=Sys.Date(),removeNotIssued = TRUE,rem
       else
         i = i+1
     }
-    print("Remove obsolete bond data Completed")
+    #print("Remove obsolete bond data Completed")
   }
   if( removeObsoleteCF )
   {
     ##Remove obsolete CF data
     i = 1
-    print(length(bonddata[[group]]$CASHFLOWS$DATE))
+    #print(length(bonddata[[group]]$CASHFLOWS$DATE))
     while( i <= length(bonddata[[group]]$CASHFLOWS$DATE))
     {      
       if(bonddata[[group]]$CASHFLOWS$DATE[i] < bonddata[[group]]$TODAY)##过期的Cashflow
@@ -168,7 +166,7 @@ ResetToday = function(bonddata,group,today=Sys.Date(),removeNotIssued = TRUE,rem
       else
         i = i+1
     }
-    print("Remove obsolete CF data Completed")
+    #print("Remove obsolete CF data Completed")
   }
   bonddata
 }
@@ -409,15 +407,17 @@ CalculateFVcoupon = function(bonddata,group,TFInfo,r)
 ##    计算以各个现券为交割券时，无套利模型下期货的理论定价
 ##    注意需要经过resetToday调整后计算才正确                         #####
 #group:"GOV"债券分类
-CalculateExpectedTFPrice = function(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
+CalculateExpectedTFPrice = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
   ##读入行情数据
   r = QuoteMoneyMarket$R1M[which(QuoteMoneyMarket$date == bonddata[[group]]$TODAY)]/100
   r = r + MoneyMarketBasis
-  ##计算必要数据
-  bonddata = AddTFInfo(bonddata,group,TFInfo)
-  bonddata = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
-  bonddata = InitTFPrice(bonddata,group,QuoteTF)
+  ##计算必要数据，在此函数前调用
+  #bonddata = AddTFInfo(bonddata,group,TFInfo)
+  #bonddata = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
+  #bonddata = InitTFPrice(bonddata,group,QuoteTF)
+  
+  bonddata[[group]]$PRICE = CalculateBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
   
   FVcoupon = CalculateFVcoupon(bonddata,group,TFInfo,r)
   daysToDelivery = matrix(data = TFInfo$settlementDate - as.Date(bonddata[[group]]$TODAY),
@@ -442,7 +442,7 @@ CalculateExpectedTFPrice = function(bonddata,group,TFInfo,QuoteTF,QuoteBond,Quot
 ##########################################################################
 ##    计算以各个现券为交割券时的隐含回购利率IRR
 ##    注意需要经过resetToday调整后计算才正确                         #####
-CalculateIRR = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
+CalculateIRR = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
   #bonddata = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
   #bonddata = InitTFPrice(bonddata,group,QuoteTF)
@@ -512,19 +512,21 @@ CalculateIRR = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket
 ##########################################################################
 ##    计算以各个现券为交割券时的净基差NetBasis
 ##    注意需要经过resetToday后计算才正确                 #####
-CalculateNetBasis = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
+CalculateNetBasis = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
-  bonddata = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket,BondYTMBasis,MoneyMarketBasis)
+  #已经在之前调用了CalculateExpectedTFPrice函数
+  #bonddata = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis,MoneyMarketBasis)
   
-  #bonddata = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
-  #bonddata = InitTFPrice(bonddata,group,QuoteTF)
+  #现货价格
+  expectedTFPrice = bonddata[[group]]$expectedTFPrice
   
+  #temp：期货价格
   temp = matrix(data = bonddata[[group]]$TFprice,
                 nr = length(TFInfo$TFname),
                 nc = length(bonddata[[group]]$ISIN),
                 byrow = FALSE)
-  netBasis = bonddata[[group]]$expectedTFPrice - temp
-  netBasis[which(bonddata[[group]]$expectedTFPrice < 10)] = 0
+  netBasis = expectedTFPrice - temp
+  netBasis[which(expectedTFPrice < 10)] = 0
   netBasis[which(temp == 0)] = 0
   
   bonddata[[group]]$netBasis = netBasis
@@ -534,7 +536,7 @@ CalculateNetBasis = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyM
 ##bonddata = BondInfo
 ##group = "GOV"
 #####################
-FindCTD = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
+FindCTD = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
   #已经计算TFIRR
   TFIRR = bonddata[[group]]$TFIRR
@@ -574,13 +576,15 @@ FindCTD = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,Bond
   
   bonddata
 }
-CalculateBPVTF = function(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket)
+
+
+CalculateBPVTF = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket)
 {
-  TFPrice_R1Mup1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket,MoneyMarketBasis=0.0001)[[group]]$expectedTFPrice
-  TFPrice_R1Mdown1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket,MoneyMarketBasis=-0.0001)[[group]]$expectedTFPrice
+  TFPrice_R1Mup1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,MoneyMarketBasis=0.0001)[[group]]$expectedTFPrice
+  TFPrice_R1Mdown1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,MoneyMarketBasis=-0.0001)[[group]]$expectedTFPrice
   
-  TFPrice_YTMup1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket,BondYTMBasis=0.0001)[[group]]$expectedTFPrice
-  TFPrice_YTMdown1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket,BondYTMBasis=-0.0001)[[group]]$expectedTFPrice
+  TFPrice_YTMup1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis=0.0001)[[group]]$expectedTFPrice
+  TFPrice_YTMdown1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis=-0.0001)[[group]]$expectedTFPrice
   
   BPV_YTM = (TFPrice_YTMdown1BP - TFPrice_YTMup1BP)/2*10000
   BPV_R1M = (TFPrice_R1Mdown1BP - TFPrice_R1Mup1BP)/2*10000
@@ -675,6 +679,45 @@ InitBondPrice = function(bondinfo,group,QuoteBond,BondYTMBasis = 0)
   bondinfo[[group]]$CONVEXITY = round(bondinfo[[group]]$CONVEXITY,4)
   bondinfo
 }
+
+##########################################################################
+##    以QuoteBond里的YTM为参数+BondYTMBasis计算Bond Price, 返回价格(vector)
+CalculateBondPrice = function(bondinfo,group,QuoteBond,BondYTMBasis = 0)
+{
+  YTM = NULL
+  for(i in 1:length(bondinfo[[group]]$ISIN))
+  {
+    #bondName = paste("Bond",bondinfo[[group]]$ISIN[i],sep="")
+    bondName = bondinfo[[group]]$ISIN[i]
+    idx      = which(QuoteBond[[bondName]]$date == bondinfo[[group]]$TODAY)
+    
+    if(length(idx) == 1)
+    {
+      YTM[i] = QuoteBond[[bondName]]$YTM[idx]
+    }
+    else
+    {
+      YTM[i] = -100
+    } 
+  }
+  bondinfo[[group]]$YTM = YTM
+  YTM = YTM / 100
+  YTM = YTM + BondYTMBasis
+  cf_p = create_cashflows_matrix(bondinfo[[group]])
+  m_p = create_maturities_matrix_China(bondinfo[[group]])
+  
+  PRICE = bond_pricesClean_China(cf_p, m_p, YTM, bondinfo[[group]]$FREQUENCY)
+ 
+  ##将缺失数据部分设置为0
+  PRICE[which(YTM==-1)] = 0
+
+  ##设置数据精度
+  PRICE = round(PRICE,4)
+
+  PRICE
+}
+
+
 ## 直接读取的方法。但因为中证的应计利息计算方式与中债不同，暂不采取直接读取的方式
 InitBondPrice_Old = function(bonddata,group,QuoteBond)
 {

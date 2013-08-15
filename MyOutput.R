@@ -9,27 +9,25 @@ BondInfo = InitGovBondInfo( DbBondInfo )
 BondInfo = ResetToday(BondInfo,"GOV","2013-8-7",FALSE,FALSE,TRUE)
 
 ###################################################################################
-#BondInfo = AddTFInfo(BondInfo,"GOV",TFInfo)
-#BondInfo = InitBondPrice(BondInfo,"GOV",QuoteBond)
-#BondInfo = InitTFPrice(BondInfo,"GOV",QuoteTF)
-###################################################################################
+#计算基本信息
+BondInfo = AddTFInfo(BondInfo,"GOV",TFInfo)
+BondInfo = InitBondPrice(BondInfo,"GOV",QuoteBond)
+BondInfo = InitTFPrice(BondInfo,"GOV",QuoteTF)
 
 #CF修改
 #CF修改结束
-#如运行CalculateExpectedTFPrice则前三行不必运行
-BondInfo = CalculateExpectedTFPrice(BondInfo,"GOV",TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket)
+BondInfo = CalculateExpectedTFPrice(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
   
-#如运行CalculateNetBasis则前四行不必运行
-BondInfo = CalculateNetBasis(BondInfo,"GOV",TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket)
+BondInfo = CalculateNetBasis(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
 
 #计算TFIRR
-BondInfo = CalculateIRR(BondInfo,"GOV",TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket)
+BondInfo = CalculateIRR(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
+
+#计算CTD（TFIRR方法）
+BondInfo = FindCTD(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
 
 #计算Bond的BPV
 BondInfo = InitBPV(BondInfo,"GOV", QuoteBond) 
 
-#计算CTD（TFIRR方法）
-BondInfo = FindCTD(BondInfo,"GOV",TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket)
-
 #计算TF的BPV（调用CalculateExpectedTFPrice）
-BondInfo = CalculateBPVTF(BondInfo,"GOV",TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket)
+BondInfo = CalculateBPVTF(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
