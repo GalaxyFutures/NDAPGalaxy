@@ -503,7 +503,7 @@ CalculateIRR = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket
   TFIRR[which(daysToDelivery < 0)] = 0
   TFIRR[which(TFPrice == 0)] = 0
   
-  TFIRR = round(TFIRR *100,2)
+  #TFIRR = round(TFIRR *100,2)
   
   dimnames(TFIRR) = list(TFInfo$TFname,bonddata[[group]]$ISIN)
   bonddata[[group]]$TFIRR = TFIRR
