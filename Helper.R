@@ -48,7 +48,7 @@ bond_pricesClean_China = function (cf_p, m_p, y, frequency)
 ##计算基点价值
 InitBPV = function(bonddata, group, QuoteBond) 
 {
-  bonddata_before     = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis = 0)
+  #bonddata_before     = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis = 0)
   bonddata_YTMup1BP   = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis = 0.0001)
   bonddata_YTMdown1BP = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis = -0.0001)
   BPV = (bonddata_YTMdown1BP[[group]]$PRICE+bonddata_YTMdown1BP[[group]]$ACCRUED-
@@ -409,13 +409,16 @@ CalculateFVcoupon = function(bonddata,group,TFInfo,r)
 ##    计算以各个现券为交割券时，无套利模型下期货的理论定价
 ##    注意需要经过resetToday调整后计算才正确                         #####
 #group:"GOV"债券分类
-CalculateExpectedTFPrice = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
+CalculateExpectedTFPrice = function(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
   ##读入行情数据
   r = QuoteMoneyMarket$R1M[which(QuoteMoneyMarket$date == bonddata[[group]]$TODAY)]/100
   r = r + MoneyMarketBasis
   ##计算必要数据
+  bonddata = AddTFInfo(bonddata,group,TFInfo)
   bonddata = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
+  bonddata = InitTFPrice(bonddata,group,QuoteTF)
+  
   FVcoupon = CalculateFVcoupon(bonddata,group,TFInfo,r)
   daysToDelivery = matrix(data = TFInfo$settlementDate - as.Date(bonddata[[group]]$TODAY),
                           nr = length(TFInfo$TFname),
@@ -441,11 +444,8 @@ CalculateExpectedTFPrice = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMa
 ##    注意需要经过resetToday调整后计算才正确                         #####
 CalculateIRR = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
-  ##读入行情数据
-  #r = QuoteMoneyMarket$R1M[which(QuoteMoneyMarket$date == bonddata[[group]]$TODAY)]/100
-  #r = r + MoneyMarketBasis
-  bonddata = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
-  bonddata = InitTFPrice(bonddata,group,QuoteTF)
+  #bonddata = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
+  #bonddata = InitTFPrice(bonddata,group,QuoteTF)
   ##计算下两次付息时间矩阵
   n_of_cf <- summary(factor(bonddata[[group]]$CASHFLOWS$ISIN, levels = bonddata[[group]]$ISIN), maxsum = 1000)
   pos_cf <- c(0, cumsum(n_of_cf))
@@ -514,17 +514,17 @@ CalculateIRR = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket
 ##    注意需要经过resetToday后计算才正确                 #####
 CalculateNetBasis = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
-  TFPrice = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis,MoneyMarketBasis)[[group]]$expectedTFPrice
+  bonddata = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket,BondYTMBasis,MoneyMarketBasis)
   
-  bonddata = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
-  bonddata = InitTFPrice(bonddata,group,QuoteTF)
+  #bonddata = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
+  #bonddata = InitTFPrice(bonddata,group,QuoteTF)
   
-  temp = matrix(data = BondInfo[[group]]$TFprice,
+  temp = matrix(data = bonddata[[group]]$TFprice,
                 nr = length(TFInfo$TFname),
                 nc = length(bonddata[[group]]$ISIN),
                 byrow = FALSE)
-  netBasis = TFPrice - temp
-  netBasis[which(TFPrice < 10)] = 0
+  netBasis = bonddata[[group]]$expectedTFPrice - temp
+  netBasis[which(bonddata[[group]]$expectedTFPrice < 10)] = 0
   netBasis[which(temp == 0)] = 0
   
   bonddata[[group]]$netBasis = netBasis
@@ -536,7 +536,8 @@ CalculateNetBasis = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyM
 #####################
 FindCTD = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
-  TFIRR = CalculateIRR(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,BondYTMBasis,MoneyMarketBasis)[[group]]$TFIRR
+  #已经计算TFIRR
+  TFIRR = bonddata[[group]]$TFIRR
   
   temp = TFIRR
   ##这里有个小bug，默认任何TFIRR不应该精确等于0，如果出现，这个债券不可能被选为CTD
@@ -550,6 +551,7 @@ FindCTD = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,Bond
                   byrow = FALSE)
   
   ##这里有个小bug，默认任何两个TFIRR不应该有相等的情况。如果出现相等，将造成length(idx)==2,选不出CTD
+  ##这个bug已更改（TFIRR的精度已提高，不会出现相等）
   CTDBond = colnames(TFIRR)[(which(TFIRR - maxIRR == 0)-1) %/% length(TFInfo$TFname)+1]
   CTDTF   = rownames(TFIRR)[(which(TFIRR - maxIRR == 0)-1) %% length(TFInfo$TFname)+1]
   
@@ -572,13 +574,13 @@ FindCTD = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket,Bond
   
   bonddata
 }
-CalculateBPVTF = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket)
+CalculateBPVTF = function(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket)
 {
-  TFPrice_R1Mup1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,MoneyMarketBasis=0.0001)[[group]]$expectedTFPrice
-  TFPrice_R1Mdown1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,MoneyMarketBasis=-0.0001)[[group]]$expectedTFPrice
+  TFPrice_R1Mup1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket,MoneyMarketBasis=0.0001)[[group]]$expectedTFPrice
+  TFPrice_R1Mdown1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket,MoneyMarketBasis=-0.0001)[[group]]$expectedTFPrice
   
-  TFPrice_YTMup1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis=0.0001)[[group]]$expectedTFPrice
-  TFPrice_YTMdown1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMarket,BondYTMBasis=-0.0001)[[group]]$expectedTFPrice
+  TFPrice_YTMup1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket,BondYTMBasis=0.0001)[[group]]$expectedTFPrice
+  TFPrice_YTMdown1BP = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket,BondYTMBasis=-0.0001)[[group]]$expectedTFPrice
   
   BPV_YTM = (TFPrice_YTMdown1BP - TFPrice_YTMup1BP)/2*10000
   BPV_R1M = (TFPrice_R1Mdown1BP - TFPrice_R1Mup1BP)/2*10000
