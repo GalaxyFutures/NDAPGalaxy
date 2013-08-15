@@ -5,23 +5,31 @@ InitMongoDb("221.133.243.54:3401","NDAPReader","Reader@Galaxy")
 QuoteMoneyMarket = GetQuoteMoneyMarketFromMongoDb("R001","average")
 #上面的代码只需要运行一次即可
 
-
 BondInfo = InitGovBondInfo( DbBondInfo )
-BondInfo = ResetToday(BondInfo,"GOV","2013-8-1",FALSE,FALSE,TRUE)
+BondInfo = ResetToday(BondInfo,"GOV","2013-8-7",FALSE,FALSE,TRUE)
 
-
-
-
-BondInfo = AddTFInfo(BondInfo,"GOV",TFInfo)
-BondInfo = InitBondPrice(BondInfo,"GOV",QuoteBond)
-BondInfo = InitTFPrice(BondInfo,"GOV",QuoteTF)
+###################################################################################
+#BondInfo = AddTFInfo(BondInfo,"GOV",TFInfo)
+#BondInfo = InitBondPrice(BondInfo,"GOV",QuoteBond)
+#BondInfo = InitTFPrice(BondInfo,"GOV",QuoteTF)
+###################################################################################
 
 #CF修改
 #CF修改结束
-BondInfo = CalculateExpectedTFPrice(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
+#如运行CalculateExpectedTFPrice则前三行不必运行
+BondInfo = CalculateExpectedTFPrice(BondInfo,"GOV",TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket)
+  
+#如运行CalculateNetBasis则前四行不必运行
 BondInfo = CalculateNetBasis(BondInfo,"GOV",TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket)
+
+#计算TFIRR
 BondInfo = CalculateIRR(BondInfo,"GOV",TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket)
 
+#计算Bond的BPV
 BondInfo = InitBPV(BondInfo,"GOV", QuoteBond) 
+
+#计算CTD（TFIRR方法）
 BondInfo = FindCTD(BondInfo,"GOV",TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket)
-BondInfo = CalculateBPVTF(BondInfo,"GOV",TFInfo,QuoteBond,QuoteMoneyMarket)
+
+#计算TF的BPV（调用CalculateExpectedTFPrice）
+BondInfo = CalculateBPVTF(BondInfo,"GOV",TFInfo,QuoteTF,QuoteBond,QuoteMoneyMarket)
