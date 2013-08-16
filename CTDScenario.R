@@ -15,7 +15,8 @@ CTDScenario = function(bonddata,group,TFInfo,QuoteMoneyMarket,tfName,ytmShift)
   ytmShift = ytmShift/10000
   for(i in 1:length(ytmShift))
   {
-    bonddata_temp = CalculateNetBasis(bonddata,group,TFInfo,QuoteMoneyMarket,BondYTMBasis = ytmShift[i])
+    bonddata = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteMoneyMarket,ytmShift[i])
+    bonddata_temp = CalculateNetBasis(bonddata,group)
     netBasis = bonddata_temp[[group]]$netBasis
     netBasis[netBasis ==0] = 2000
     BasisDiff[i,] = netBasis[tfName,] - min(netBasis[tfName,])
