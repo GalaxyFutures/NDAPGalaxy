@@ -510,10 +510,10 @@ CalculateIRR = function(bonddata,group,TFInfo,BondYTMBasis = 0,MoneyMarketBasis 
 ##########################################################################
 ##    计算以各个现券为交割券时的净基差NetBasis
 ##    注意需要经过resetToday后计算才正确                 #####
-CalculateNetBasis = function(bonddata,group,BondYTMBasis = 0,MoneyMarketBasis = 0)
+CalculateNetBasis = function(bonddata,group,TFInfo,QuoteMoneyMarket,BondYTMBasis = 0,MoneyMarketBasis = 0)
 {
-  #已经在之前调用了CalculateExpectedTFPrice函数
-  #bonddata = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteMoneyMarket,BondYTMBasis,MoneyMarketBasis)
+  #先调用了CalculateExpectedTFPrice函数
+  bonddata = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteMoneyMarket,BondYTMBasis,MoneyMarketBasis)
   
   #现货价格
   expectedTFPrice = bonddata[[group]]$expectedTFPrice

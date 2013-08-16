@@ -9,13 +9,13 @@
 #BondInfo = InitGovBondInfo( DbBondInfo )
 #resetToday
 
-CTDScenario = function(bonddata,group,quotebond,quoteTF,tfInfo,quoteMoneyMarket,tfName,ytmShift)
+CTDScenario = function(bonddata,group,TFInfo,QuoteMoneyMarket,tfName,ytmShift)
 {
   BasisDiff = matrix(0,nr = length(ytmShift),nc = length(bonddata[[group]]$ISIN))
   ytmShift = ytmShift/10000
   for(i in 1:length(ytmShift))
   {
-    bonddata_temp = CalculateNetBasis(bonddata,group,tfInfo,quotebond,quoteTF,quoteMoneyMarket,BondYTMBasis = ytmShift[i])
+    bonddata_temp = CalculateNetBasis(bonddata,group,TFInfo,QuoteMoneyMarket,BondYTMBasis = ytmShift[i])
     netBasis = bonddata_temp[[group]]$netBasis
     netBasis[netBasis ==0] = 2000
     BasisDiff[i,] = netBasis[tfName,] - min(netBasis[tfName,])
