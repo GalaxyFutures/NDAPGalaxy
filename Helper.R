@@ -953,3 +953,73 @@ Bondprice2ytm = function(couponRate,issueDate,endDate,freq,today,price)
   result
 }
 
+
+##########################################################################
+##    根据TODAY信息从QuoteBond中读取需要的价格信息
+##    采取根据净价来计算YTM、应计利息、全价的方式，以便符合标准的中债计算方法
+InitBondYTM = function(bondinfo,group,QuoteBond,BondYTMBasis = 0)
+{
+  PRICE = NULL
+  YTM = NULL
+  ACCRUED = NULL
+  for(i in 1:length(bondinfo[[group]]$ISIN))
+  {
+    #bondName = paste("Bond",bondinfo[[group]]$ISIN[i],sep="")
+    bondName = bondinfo[[group]]$ISIN[i]
+    idx      = which(QuoteBond[[bondName]]$date == bondinfo[[group]]$TODAY)
+    
+    if(length(idx) == 1)
+    {
+      PRICE[i] = QuoteBond[[bondName]]$priceClean[idx]
+      couponRate = bondinfo[[group]]$COUPONRATE[i] * 100
+      issueDate = bondinfo[[group]]$ISSUEDATE[i]
+      endDate = bondinfo[[group]]$MATURITYDATE[i]
+      freq = bondinfo[[group]]$FREQUENCY[i]
+      result = Bondprice2ytm(couponRate,issueDate,endDate,freq,today,PRICE[i])
+      YTM[i] = result[1]
+      ACCRUED[i] = result[2]
+    }
+    else
+    {
+      PRICE[i] = 0
+      YTM[i]=-1
+      ACCRUED[i] = 0
+    } 
+  }
+  bondinfo[[group]]$PRICE = PRICE
+  bondinfo[[group]]$YTM = YTM    
+  bondinfo[[group]]$ACCRUED = ACCRUED  
+  
+  MOD_DURATION = bondinfo[[group]]$PRICE
+  CONVEXITY = bondinfo[[group]]$PRICE
+  
+  for(i in 1:length(bondinfo[[group]]$ISIN))
+  {
+    couponRate = bondinfo[[group]]$COUPONRATE[i] * 100
+    issueDate = bondinfo[[group]]$ISSUEDATE[i]
+    endDate = bondinfo[[group]]$MATURITYDATE[i]
+    freq = bondinfo[[group]]$FREQUENCY[i]
+    today = bondinfo[[group]]$TODAY
+    ytm = YTM[i]
+    
+    result = Bondytm2DurationConvexity(couponRate,issueDate,endDate,freq,today,ytm)
+    MOD_DURATION[i] = result[1]
+    CONVEXITY[i] = result[2]
+  }
+  bondinfo[[group]]$MOD_DURATION = MOD_DURATION
+  bondinfo[[group]]$CONVEXITY = CONVEXITY
+  
+  ##将缺失数据部分设置为0
+  bondinfo[[group]]$PRICE[which(YTM==-1)] = 0
+  bondinfo[[group]]$ACCRUED[which(YTM==-1)] = 0
+  bondinfo[[group]]$MOD_DURATION[which(YTM==-1)] = 0
+  bondinfo[[group]]$CONVEXITY[which(YTM==-1)] = 0
+  bondinfo[[group]]$YTM[which(YTM==-1)] = 0
+  
+  ##设置数据精度
+  bondinfo[[group]]$PRICE = round(bondinfo[[group]]$PRICE,4)
+  bondinfo[[group]]$ACCRUED = round(bondinfo[[group]]$ACCRUED,4)
+  bondinfo[[group]]$MOD_DURATION = round(bondinfo[[group]]$MOD_DURATION,4)
+  bondinfo[[group]]$CONVEXITY = round(bondinfo[[group]]$CONVEXITY,4)
+  bondinfo
+}
