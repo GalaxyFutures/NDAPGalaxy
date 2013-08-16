@@ -26,6 +26,7 @@ OnData = function(arg_bonddata)
     gdata[[data$Code[[i]]]]<<-item
     i= i+1
   }  
+  save(data,"e:/data.text")
 }
 
 
