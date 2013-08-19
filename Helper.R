@@ -395,12 +395,12 @@ CalculateFVcoupon = function(bonddata,group,TFInfo,r)
   Couponnext2[which(DateCouponnext2 > temp)] = 0
   
   ##将付息日期为today的部分设置为0
-  Matrix_today = matrix(data = bonddata[[group]]$TODAY,
+  Matrix_today = matrix(bonddata[[group]]$TODAY,
                 nr = length(TFInfo$TFname),
                 nc = length( bonddata[[group]]$ISIN),
                 byrow = FALSE)
   
-  Couponnext[which(DateCouponnext <= Matrix_today)] = 0
+  Couponnext[which(as.Date(DateCouponnext) <= Matrix_today)] = 0
   
   ##按照短期利率计算付息金额的未来价值
   FVcouponNext = Couponnext*(1 + r*as.integer(temp-DateCouponnext)/365)
@@ -492,7 +492,7 @@ CalculateIRR = function(bonddata,group,TFInfo,BondYTMBasis = 0,MoneyMarketBasis 
                         nc = length( bonddata[[group]]$ISIN),
                         byrow = FALSE)
   
-  Couponnext[which(DateCouponnext <= Matrix_today)] = 0
+  Couponnext[which(as.Date(DateCouponnext) <= Matrix_today)] = 0
   
   ##按照短期利率计算付息金额的未来价值
   DateCouponnextInterval = as.integer(temp-DateCouponnext)
