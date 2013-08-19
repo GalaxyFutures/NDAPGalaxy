@@ -7,8 +7,7 @@ OpenWSQ = function(arg_codes)
 gdata<-list()
 OnData = function(arg_bonddata)
 { 
-  data <<- arg_bonddata
-  print(data)
+  data <<- arg_bonddata  
   cntRow = length(data$Code)
   i = 1
   while(i<=cntRow)
