@@ -992,6 +992,7 @@ InitBondYTM = function(bondinfo,group,QuoteBond,BondYTMBasis = 0)
       issueDate = bondinfo[[group]]$ISSUEDATE[i]
       endDate = bondinfo[[group]]$MATURITYDATE[i]
       freq = bondinfo[[group]]$FREQUENCY[i]
+      today = bondinfo[[group]]$TODAY
       result = Bondprice2ytm(couponRate,issueDate,endDate,freq,today,PRICE[i])
       YTM[i] = result[1]
       ACCRUED[i] = result[2]
