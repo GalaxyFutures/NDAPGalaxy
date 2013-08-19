@@ -395,7 +395,7 @@ CalculateFVcoupon = function(bonddata,group,TFInfo,r)
   Couponnext2[which(DateCouponnext2 > temp)] = 0
   
   ##将付息日期为today的部分设置为0
-  Matrix_today = matrix(bonddata[[group]]$TODAY,
+  Matrix_today = matrix(data = bonddata[[group]]$TODAY,
                 nr = length(TFInfo$TFname),
                 nc = length( bonddata[[group]]$ISIN),
                 byrow = FALSE)
