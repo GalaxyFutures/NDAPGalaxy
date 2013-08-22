@@ -92,12 +92,15 @@ BondInfo = ResetToday(BondInfo,"GOV","2013-08-19",FALSE,FALSE,TRUE)
 BondInfo = AddTFInfo(BondInfo,"GOV",TFInfo)
 BondInfo = InitBondYTM(BondInfo,"GOV",QuoteBond)
 BondInfo = InitTFPrice(BondInfo,"GOV",QuoteTF)
-BondInfo = CalculateExpectedTFPrice(BondInfo,"GOV",TFInfo,QuoteMoneyMarket)
-BondInfo = CalculateNetBasis(BondInfo,"GOV")
+
 BondInfo = CalculateIRR(BondInfo,"GOV",TFInfo)
 BondInfo = FindCTD(BondInfo,"GOV",TFInfo)
 BondInfo = InitBPV(BondInfo,"GOV") 
-BondInfo = CalculateBPVTF(BondInfo,"GOV",TFInfo,QuoteMoneyMarket)
+
+
+#BondInfo = CalculateExpectedTFPrice(BondInfo,"GOV",TFInfo,QuoteMoneyMarket)
+#BondInfo = CalculateNetBasis(BondInfo,"GOV")
+#BondInfo = CalculateBPVTF(BondInfo,"GOV",TFInfo,QuoteMoneyMarket)
 
 
 QuoteMoneyMarket_AllRepo = c(3.5,4.0,2.5)
