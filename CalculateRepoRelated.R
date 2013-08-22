@@ -2,20 +2,20 @@
 
 
 
-CalculateRepoRelated = function(bonddata,group,TFInfo,QuoteMoneyMarket_AllRepo,BondYTMBasis = 0,MoneyMarketBasis = 0)
+CalculateRepoRelated = function(bonddata,group,tfInfo,quoteMoneyMarket_AllRepo,bondYTMBasis = 0,moneyMarketBasis = 0)
 {
   result <- list()
   
-  for (i in 1:length(QuoteMoneyMarket_AllRepo))
+  for (i in 1:length(quoteMoneyMarket_AllRepo))
   {
     QuoteMoneyMarket = list()
-    QuoteMoneyMarket$R1M = c(QuoteMoneyMarket_AllRepo[i])
+    QuoteMoneyMarket$R1M = c(quoteMoneyMarket_AllRepo[i])
     QuoteMoneyMarket$date = c(bonddata[[group]]$TODAY)
     
     
-    temp_bonddata = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteMoneyMarket,BondYTMBasis,MoneyMarketBasis)
+    temp_bonddata = CalculateExpectedTFPrice(bonddata,group,tfInfo,QuoteMoneyMarket,bondYTMBasis,moneyMarketBasis)
     temp_bonddata = CalculateNetBasis(temp_bonddata,group)
-    temp_bonddata = CalculateBPVTF(temp_bonddata,group,TFInfo,QuoteMoneyMarket)
+    temp_bonddata = CalculateBPVTF(temp_bonddata,group,tfInfo,QuoteMoneyMarket)
     
     result[[i]]=list()
     result[[i]]$PRICE = temp_bonddata[[group]]$PRICE
