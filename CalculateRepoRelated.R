@@ -34,9 +34,8 @@ CalculateRepoRelated = function(bonddata,group,tfInfo,quoteMoneyMarket_AllRepo,b
 }
 
 
-QuoteMoneyMarket_AllRepo = c(3.5,4.0,2.5)
-
-result = CalculateRepoRelated(BondInfo,"GOV",TFInfo,QuoteMoneyMarket_AllRepo)
+#QuoteMoneyMarket_AllRepo = c(3.5,4.0,2.5)
+#result = CalculateRepoRelated(BondInfo,"GOV",TFInfo,QuoteMoneyMarket_AllRepo)
 
 
 
