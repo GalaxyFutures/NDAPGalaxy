@@ -9,8 +9,17 @@
 #BondInfo = InitGovBondInfo( DbBondInfo )
 #resetToday
 
-CTDScenario = function(bonddata,group,TFInfo,QuoteMoneyMarket,tfName,ytmShift)
+CTDScenario = function(bonddata,group,TFInfo,quoteMoneyMarket_AllRepo,tfName,ytmShift)
 {
+  result <- list()
+  
+  for (i in 1:length(quoteMoneyMarket_AllRepo))
+  {
+  QuoteMoneyMarket = list()
+  QuoteMoneyMarket$R1M = c(quoteMoneyMarket_AllRepo[i])
+  QuoteMoneyMarket$date = c(bonddata[[group]]$TODAY)
+  
+  
   BasisDiff = matrix(0,nr = length(ytmShift),nc = length(bonddata[[group]]$ISIN))
   ytmShift = ytmShift/10000
   for(i in 1:length(ytmShift))
@@ -29,6 +38,10 @@ CTDScenario = function(bonddata,group,TFInfo,QuoteMoneyMarket,tfName,ytmShift)
   BasisDiff = data.frame(cbind(COUPONRATE=bonddata[[group]]$COUPONRATE*100,MATURITYDATE=bonddata[[group]]$MATURITYDATE,PRICE=bonddata[[group]]$PRICE,YTM=bonddata[[group]]$YTM,BasisDiff),check.names = TRUE)
   BasisDiff = BasisDiff[order(BasisDiff[,7],decreasing=FALSE),]
   BasisDiff$MATURITYDATE = as.Date(BasisDiff$MATURITYDATE)
-  BasisDiff
+  
+  result[[i]] = BasisDiff
+  }
+  
+  result
 
 }
