@@ -9,16 +9,8 @@
 #BondInfo = InitGovBondInfo( DbBondInfo )
 #resetToday
 
-CTDScenario = function(bonddata,group,TFInfo,quoteMoneyMarket_AllRepo,tfName,ytmShift)
+CTDScenario = function(bonddata,group,TFInfo,quoteMoneyMarket,tfName,ytmShift)
 {
-  result <- list()
-  
-  for (i in 1:length(quoteMoneyMarket_AllRepo))
-  {
-  QuoteMoneyMarket = list()
-  QuoteMoneyMarket$R1M = c(quoteMoneyMarket_AllRepo[i])
-  QuoteMoneyMarket$date = c(bonddata[[group]]$TODAY)
-  
   
   BasisDiff = matrix(0,nr = length(ytmShift),nc = length(bonddata[[group]]$ISIN))
   ytmShift = ytmShift/10000
@@ -39,9 +31,47 @@ CTDScenario = function(bonddata,group,TFInfo,quoteMoneyMarket_AllRepo,tfName,ytm
   BasisDiff = BasisDiff[order(BasisDiff[,7],decreasing=FALSE),]
   BasisDiff$MATURITYDATE = as.Date(BasisDiff$MATURITYDATE)
   
-  result[[i]] = BasisDiff
+  BasisDiff
+
+}
+
+
+#新函数
+CTDScenario_vector = function(bonddata,group,TFInfo,quoteMoneyMarket_AllRepo,tfName,ytmShift)
+{
+  result <- list()
+  
+  for (i in 1:length(quoteMoneyMarket_AllRepo))
+  {
+    QuoteMoneyMarket = list()
+    QuoteMoneyMarket$R1M = c(quoteMoneyMarket_AllRepo[i])
+    QuoteMoneyMarket$date = c(bonddata[[group]]$TODAY)
+    
+    
+    BasisDiff = matrix(0,nr = length(ytmShift),nc = length(bonddata[[group]]$ISIN))
+    ytmShift = ytmShift/10000
+    for(i in 1:length(ytmShift))
+    {
+      bonddata = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteMoneyMarket,ytmShift[i])
+      bonddata_temp = CalculateNetBasis(bonddata,group)
+      netBasis = bonddata_temp[[group]]$netBasis
+      netBasis[netBasis ==0] = 2000
+      BasisDiff[i,] = netBasis[tfName,] - min(netBasis[tfName,])
+    }
+    
+    BasisDiff = t(BasisDiff)
+    BasisDiff = round(BasisDiff,3)
+    dimnames(BasisDiff) = list(bonddata[[group]]$ISIN,ytmShift)
+    
+    BasisDiff = data.frame(cbind(COUPONRATE=bonddata[[group]]$COUPONRATE*100,MATURITYDATE=bonddata[[group]]$MATURITYDATE,PRICE=bonddata[[group]]$PRICE,YTM=bonddata[[group]]$YTM,BasisDiff),check.names = TRUE)
+    BasisDiff = BasisDiff[order(BasisDiff[,7],decreasing=FALSE),]
+    BasisDiff$MATURITYDATE = as.Date(BasisDiff$MATURITYDATE)
+    
+    result[[i]] = BasisDiff
   }
   
   result
-
+  
 }
+
+
