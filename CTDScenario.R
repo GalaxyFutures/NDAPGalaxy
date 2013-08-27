@@ -1,7 +1,7 @@
 ########################################################################################
 ###########           CTD切换                   #########################
 
-#ytmShift = c(-100,-50,0,50,100)
+#ytmShift = c(-100,1,0,50,100)
 #tfName = "TF1403"
 #bonddata = 经过resetToday后的BondInfo
 #如需重置today，需运行
@@ -30,7 +30,7 @@ CTDScenario = function(bonddata,group,TFInfo,quoteMoneyMarket,tfName,ytmShift)
   BasisDiff = data.frame(cbind(COUPONRATE=bonddata[[group]]$COUPONRATE*100,MATURITYDATE=bonddata[[group]]$MATURITYDATE,PRICE=bonddata[[group]]$PRICE,YTM=bonddata[[group]]$YTM,BasisDiff),check.names = TRUE)
   BasisDiff = BasisDiff[order(BasisDiff[,7],decreasing=FALSE),]
   BasisDiff$MATURITYDATE = as.Date(BasisDiff$MATURITYDATE)
-  
+  names(BasisDiff) = c("COUPONRATE","MATURITYDATE","PRICE","YTM","col1","col2","col3","col4","col5")
   BasisDiff
 
 }
@@ -66,7 +66,7 @@ CTDScenario_vector = function(bonddata,group,TFInfo,quoteMoneyMarket_AllRepo,tfN
     BasisDiff = data.frame(cbind(COUPONRATE=bonddata[[group]]$COUPONRATE*100,MATURITYDATE=bonddata[[group]]$MATURITYDATE,PRICE=bonddata[[group]]$PRICE,YTM=bonddata[[group]]$YTM,BasisDiff),check.names = TRUE)
     BasisDiff = BasisDiff[order(BasisDiff[,7],decreasing=FALSE),]
     BasisDiff$MATURITYDATE = as.Date(BasisDiff$MATURITYDATE)
-    
+    names(BasisDiff) = c("COUPONRATE","MATURITYDATE","PRICE","YTM","col1","col2","col3","col4","col5")
     result[[i]] = BasisDiff
   }
   
