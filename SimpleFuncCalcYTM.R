@@ -13,7 +13,7 @@ price_clean=96.31705
 
 func_calculate_ytm = function(couponRate,issueDate,endDate,freq,today,price)
 {
-  ytm = Bondprice2ytm(couponRate,issueDate,endDate,freq,today,price)
+  ytm = Bondprice2ytm(couponRate,issueDate,endDate,freq,today,price)[1]
   ytm = round(ytm/0.005)*0.005
   ytm
 }
