@@ -335,9 +335,9 @@ CalculateTFParam = function(bonddata,group,TFInfo,i)
   SettlementDate = TFInfo$settlementDate[i]
   TFNAME         = TFInfo$TFname[i]
   
-  #SettlementDate为最后交易日，算国债期货的应计利息时应算到最后交割日，故+5
+  #SettlementDate为最后交易日
   temp = bonddata
-  temp = ResetToday(temp,group, SettlementDate+5,FALSE,FALSE,TRUE)
+  temp = ResetToday(temp,group, SettlementDate,FALSE,FALSE,TRUE)
 
   cf1 = create_cashflows_matrix(temp[[group]])
   m1 = create_maturities_matrix_China(temp[[group]])
