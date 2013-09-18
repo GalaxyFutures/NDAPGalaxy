@@ -8,6 +8,15 @@ func_calculate_ytm = function(known_price,known_ytm,dur,price)
   ytm
 }
 
+#从债券基本信息计算ytm
+func_calculate_ytm_bis = function(couponRate,issueDate,endDate,freq,today,price)
+{
+  
+  ytm = Bondprice2ytm(couponRate,issueDate,endDate,freq,today,price)[1]
+  ytm = round(ytm/0.005)*0.005
+  ytm
+}
+
 Calculate_BondPrice_from_TFPrice = function(bonddata,group,tFPrice,tFInfo,quoteMoneyMarket)#tFInfo
 {
   ##读入行情数据
