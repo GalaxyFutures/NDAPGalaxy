@@ -27,6 +27,7 @@ CTDScenario = function(bonddata,group,TFInfo,quoteMoneyMarket,tfName,ytmShift)
   BasisDiff = round(BasisDiff,3)
   dimnames(BasisDiff) = list(bonddata[[group]]$ISIN,ytmShift)
   
+  bonddata = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteMoneyMarket,0)
   BasisDiff = data.frame(cbind(COUPONRATE=bonddata[[group]]$COUPONRATE*100,MATURITYDATE=bonddata[[group]]$MATURITYDATE,PRICE=bonddata[[group]]$PRICE,YTM=bonddata[[group]]$YTM,BasisDiff),check.names = TRUE)
   BasisDiff = BasisDiff[order(BasisDiff[,7],decreasing=FALSE),]
   BasisDiff$MATURITYDATE = as.Date(BasisDiff$MATURITYDATE)
@@ -63,6 +64,7 @@ CTDScenario_vector = function(bonddata,group,TFInfo,quoteMoneyMarket_AllRepo,tfN
     BasisDiff = round(BasisDiff,3)
     dimnames(BasisDiff) = list(bonddata[[group]]$ISIN,ytmShift)
     
+    bonddata = CalculateExpectedTFPrice(bonddata,group,TFInfo,QuoteMoneyMarket,0)
     BasisDiff = data.frame(cbind(COUPONRATE=bonddata[[group]]$COUPONRATE*100,MATURITYDATE=bonddata[[group]]$MATURITYDATE,PRICE=bonddata[[group]]$PRICE,YTM=bonddata[[group]]$YTM,BasisDiff),check.names = TRUE)
     BasisDiff = BasisDiff[order(BasisDiff[,7],decreasing=FALSE),]
     BasisDiff$MATURITYDATE = as.Date(BasisDiff$MATURITYDATE)
