@@ -1,22 +1,23 @@
 
 
 
-#Year = c(1,2,3,5,7,10,30,50)  1Y,2Y,5Y,10Y,30Y,50Y
+#Year = c(1,2,3,4,5,7,10,30,50)  1Y,2Y,5Y,10Y,30Y,50Y
 #Yield = c(3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2)
 #yc = rbind(Year,Yield) 
 
 
-outputTFYC2Duration = function(r,settlementDate,couponRate,issueDate,endDate,freq,today,yc_init)
+outputTFYC2Duration = function(r,LastTradeDate,couponRate,issueDate,endDate,freq,today,yc_init)#yc_init的第一个利率期限为0（overnight）
 {
-  tfDaysToMaturity = as.numeric(difftime(as.Date(settlementDate), as.Date(today), units = "days"))
-  KeyRateDuration = cbind(c(0,0),yc_init)
+  tfDaysToMaturity = as.numeric(difftime(as.Date(LastTradeDate), as.Date(today), units = "days"))
   
-  KeyRateDuration[2,1]= tfDaysToMaturity/(365+r/100*tfDaysToMaturity)
+  KeyRateDuration = yc_init
+  if (yc_init[1,1]!=0)
+  KeyRateDuration = cbind(c(0,0),KeyRateDuration)
   
-  for (j in 2:ncol(KeyRateDuration))
-  {
-    KeyRateDuration[2,j]= BondYC2Duration(couponRate,issueDate,endDate,freq,today,yc_init,KeyRateDuration[1,j],interval=1)[1]
-  }
+  shortRateExpo= -tfDaysToMaturity/(365+r/100*tfDaysToMaturity)
+  
+  KeyRateDuration = outputBondYC2Duration(couponRate,issueDate,endDate,freq,today,yc_init)
+  KeyRateDuration[2,1] = KeyRateDuration[2,1] + shortRateExpo
   KeyRateDuration
 }
 
@@ -26,20 +27,31 @@ outputBondYC2Duration = function(couponRate,issueDate,endDate,freq,today,yc_init
   KeyRateDuration = yc_init
   for (j in 1:ncol(KeyRateDuration))
   {
-    KeyRateDuration[2,j]= BondYC2Duration(couponRate,issueDate,endDate,freq,today,yc_init,KeyRateDuration[1,j],interval=1)[1]
+    if (j == 1)
+    {
+      if (KeyRateDuration[1,j]==0)
+        KeyRateDuration[2,j]= BondYC2Duration(couponRate,issueDate,endDate,freq,today,yc_init,KeyRateDuration[1,j],leftInterval=1,rightInterval = KeyRateDuration[1,j+1]-KeyRateDuration[1,j])[1]
+      else
+        KeyRateDuration[2,j]= BondYC2Duration(couponRate,issueDate,endDate,freq,today,yc_init,KeyRateDuration[1,j],leftInterval=KeyRateDuration[1,j],rightInterval = KeyRateDuration[1,j+1]-KeyRateDuration[1,j])[1]
+    }
+    else if (j == ncol(KeyRateDuration))
+      KeyRateDuration[2,j]= BondYC2Duration(couponRate,issueDate,endDate,freq,today,yc_init,KeyRateDuration[1,j],leftInterval=KeyRateDuration[1,j]-KeyRateDuration[1,j-1],rightInterval = 1)[1]
+    else
+    KeyRateDuration[2,j]= BondYC2Duration(couponRate,issueDate,endDate,freq,today,yc_init,KeyRateDuration[1,j],leftInterval=KeyRateDuration[1,j]-KeyRateDuration[1,j-1],rightInterval = KeyRateDuration[1,j+1]-KeyRateDuration[1,j])[1]
   }
   KeyRateDuration
 }
 
 
 #给定初始收益率曲线yc_init和债券基本信息，计算在ratePoint点的KeyRateDuration
-BondYC2Duration = function(couponRate,issueDate,endDate,freq,today,yc_init,ratePoint,interval=2) #interval = +- 2Yrs,ratePoint +- 10 bp
+BondYC2Duration = function(couponRate,issueDate,endDate,freq,today,yc_init,ratePoint,leftInterval=1,rightInterval = 1) #interval = +- 1Yr,ratePoint +- 10 bp
 {
   issueDate = as.Date(issueDate)
   endDate = as.Date(endDate)
   today = as.Date(today)
   
-  yc_init = cbind(c(0,yc_init[2,1]-yc_init[1,1]*(yc_init[2,2]-yc_init[2,1])/(yc_init[1,2]-yc_init[1,1])),yc_init)
+  if(yc_init[1,1]!=0)
+  yc_init <- cbind(c(0,yc_init[2,1]-yc_init[1,1]*(yc_init[2,2]-yc_init[2,1])/(yc_init[1,2]-yc_init[1,1])),yc_init)
   YCfunc_init <- approxfun(yc_init[1,], yc_init[2,])
   
   #构造ratePoint点收益率上移10bp的收益率曲线,假定在t=0的收益率不变
@@ -47,13 +59,16 @@ BondYC2Duration = function(couponRate,issueDate,endDate,freq,today,yc_init,rateP
   j = 1
   while (j <=ncol(yc_up))
   {
-    if(yc_up[1,j]<=(ratePoint + interval) & yc_up[1,j]>=(ratePoint - interval))
+    if(yc_up[1,j]<=(ratePoint + rightInterval) & yc_up[1,j]>=(ratePoint - leftInterval))
       yc_up = yc_up[,-j]
     else
-    j = j + 1
+      j = j + 1
   }
   
-  yc_up <- cbind(c(0,YCfunc_init(0)),c(ratePoint,YCfunc_init(ratePoint)+0.1),c(ratePoint+interval,YCfunc_init(ratePoint+interval)),c(ratePoint-interval,YCfunc_init(ratePoint-interval)),yc_up)
+  if(ratePoint == 0) 
+  yc_up <- cbind(c(ratePoint,YCfunc_init(ratePoint)+0.1),c(ratePoint+rightInterval,YCfunc_init(ratePoint+rightInterval)),c(ratePoint-leftInterval,YCfunc_init(ratePoint-leftInterval)),yc_up)
+  else 
+  yc_up <- cbind(c(0,YCfunc_init(0)),c(ratePoint,YCfunc_init(ratePoint)+0.1),c(ratePoint+ rightInterval,YCfunc_init(ratePoint+ rightInterval)),c(ratePoint- leftInterval,YCfunc_init(ratePoint- leftInterval)),yc_up)
   YCfunc_up <- approxfun(yc_up[1,], yc_up[2,])
   
   #构造ratePoint点收益率下移10bp的收益率曲线,假定在t=0的收益率不变
@@ -61,15 +76,16 @@ BondYC2Duration = function(couponRate,issueDate,endDate,freq,today,yc_init,rateP
   j = 1
   while (j <=ncol(yc_down))
   {
-    if(yc_down[1,j]<=(ratePoint + interval) & yc_down[1,j]>=(ratePoint - interval))
+    if(yc_down[1,j]<=(ratePoint + rightInterval) & yc_down[1,j]>=(ratePoint - leftInterval))
       yc_down = yc_down[,-j]
     else
       j = j + 1
   }
-  
-  yc_down <- cbind(c(0,YCfunc_init(0)),c(ratePoint,YCfunc_init(ratePoint)-0.1),c(ratePoint+interval,YCfunc_init(ratePoint+interval)),c(ratePoint-interval,YCfunc_init(ratePoint-interval)),yc_down)
+  if(ratePoint == 0)
+  yc_down <- cbind(c(ratePoint,YCfunc_init(ratePoint)-0.1),c(ratePoint+ rightInterval,YCfunc_init(ratePoint+ rightInterval)),c(ratePoint- leftInterval,YCfunc_init(ratePoint- leftInterval)),yc_down)
+  else
+  yc_down <- cbind(c(0,YCfunc_init(0)),c(ratePoint,YCfunc_init(ratePoint)-0.1),c(ratePoint+ rightInterval,YCfunc_init(ratePoint+ rightInterval)),c(ratePoint- leftInterval,YCfunc_init(ratePoint- leftInterval)),yc_down)
   YCfunc_down <- approxfun(yc_down[1,], yc_down[2,])
-  
   
   
   if (freq == 1)
@@ -226,7 +242,7 @@ BondYC2Duration = function(couponRate,issueDate,endDate,freq,today,yc_init,rateP
     KeyRateDuration = (price_down - price_up)/price_init/0.002
   }
   
-  result = c(KeyRateDuration,price_init)
+  result = c(KeyRateDuration,price_init-ACCRUED)
   result
   
 }
@@ -235,20 +251,24 @@ BondYC2Duration = function(couponRate,issueDate,endDate,freq,today,yc_init,rateP
 ############################################  test  #############################################
 #couponRate,YC单位%
 #YC为收益率曲线
-Year = c(1/12,3/12,6/12,1,2,5,10,30,50)
-Yield = c(3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,4.0)
+#bond:080025.IB, TF:1309
+#YC:0(overnight):shibor, 其他：国债收益率
+Year = c(0,1,3,5,7,10,30)
+Yield = c(2.8179,3.5021,3.3313,3.4143,3.5709,3.6152,4.3084)
 YC = rbind(Year,Yield) 
-couponRate = 3
-issueDate = "2007/7/1"
-endDate = "2017/7/1"
+couponRate = 3.46
+issueDate = "2013/7/11"
+endDate = "2020/7/11"
 freq = 1
-today = "2013/7/1"
-yc_init = YC
-ratePoint = 2
+today = "2013/7/12"
 
-BondYC2Duration(couponRate,issueDate,endDate,freq,today,yc_init,ratePoint,interval=2)
-Bondytm2DurationConvexity(couponRate,issueDate,endDate,freq,today,ytm = 3.497)[1]
-BondYC2Duration(couponRate,issueDate,endDate,freq,today,yc_init,ratePoint,interval=5)
+BondKeyRateDur = outputBondYC2Duration(couponRate,issueDate,endDate,freq,today,YC)
+
+#CTD为050012.IB
+couponRate = 3.65
+issueDate = "2005/11/15"
+endDate = "2020/11/15"
+freq = 2
+TFKeyRateDur = outputTFYC2Duration(YC[2,1],"2013/12/18",couponRate,issueDate,endDate,freq,today,YC)
   
-  
-  
+

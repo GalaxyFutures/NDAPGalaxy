@@ -22,7 +22,7 @@ GetTFVarietiesFromMongo = function ()
   cols = Rows2Columns_Tool(rows)
   
   cols = list( cols$'_id', GetDate(cols$LastTradeDate), GetYM(GetDate(cols$LastTradeDate)))
-  names(cols)= c("TFname" ,"settlementDate","settlementMonth")
+  names(cols)= c("TFname" ,"LastTradeDate","settlementMonth")
     
   cols    
 }

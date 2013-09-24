@@ -6,7 +6,7 @@ QuoteMoneyMarket = GetQuoteMoneyMarketFromMongoDb("R001","average")
 #上面的代码只需要运行一次即可
 
 BondInfo = InitGovBondInfo( DbBondInfo )
-BondInfo = ResetToday(BondInfo,"GOV","2013-8-7",FALSE,FALSE,TRUE)
+BondInfo = ResetToday(BondInfo,"GOV","2013-8-15",FALSE,FALSE,TRUE)
 
 ###################################################################################
 #计算基本信息
@@ -22,6 +22,15 @@ BondInfo = CalculateNetBasis(BondInfo,"GOV")
 
 #计算TFIRR
 BondInfo = CalculateIRR(BondInfo,"GOV",TFInfo)
+
+
+
+#计算期货价格反推的债券的价格
+BondInfo = Calculate_BondPrice_from_TFPrice(BondInfo,"GOV",TFInfo,QuoteMoneyMarket)
+
+
+
+
 
 #计算CTD（TFIRR方法）
 BondInfo = FindCTD(BondInfo,"GOV")

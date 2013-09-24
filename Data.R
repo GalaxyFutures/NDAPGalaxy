@@ -6,7 +6,7 @@
 ########## TF Basic Info #########################
 TFInfo = list(
   TFname          = c("TF1203","TF1206","TF1209","TF1212","TF1303","TF1306","TF1309","TF1312"),
-  settlementDate  = c(as.Date("2012-03-09","%Y-%m-%d"),
+  LastTradeDate  = c(as.Date("2012-03-09","%Y-%m-%d"),
                       as.Date("2012-06-13","%Y-%m-%d"),
                       as.Date("2012-09-19","%Y-%m-%d"),
                       as.Date("2012-12-19","%Y-%m-%d"),

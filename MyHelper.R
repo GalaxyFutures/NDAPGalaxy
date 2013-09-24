@@ -307,7 +307,7 @@ UpdateDeliverable = function(bonddata,group,TFInfo)
                  nc = length(bonddata[[group]]$ISIN),
                  byrow = TRUE)
   
-  test2 = temp2 < TFInfo$settlementDate
+  test2 = temp2 < TFInfo$LastTradeDate
   ##################################################
   #条件3：（暂未加入）在交割月可以转托管
   ##################################################
@@ -332,7 +332,7 @@ AddTFInfo = function(bonddata,group,TFInfo)
   accruedInterest  = matrix(data=0,nr = length(TFInfo$TFname),nc = length(bonddata[[group]]$ISIN))
   for( i in 1:length(TFInfo$TFname))
   {
-    if(bonddata[[group]]$TODAY >= TFInfo$settlementDate[i])
+    if(bonddata[[group]]$TODAY >= TFInfo$LastTradeDate[i])
     {
       conversionFactor[i,]= rep(0,length(bonddata[[group]]$ISIN))
       accruedInterest[i,]= rep(0,length(bonddata[[group]]$ISIN))
@@ -357,10 +357,10 @@ AddTFInfo = function(bonddata,group,TFInfo)
 ###############   注意这里需要bonddata包括deliverable信息     ############
 CalculateTFParam = function(bonddata,group,TFInfo,i)
 {
-  SettlementDate = TFInfo$settlementDate[i]
+  LastTradeDate = TFInfo$LastTradeDate[i]
   TFNAME         = TFInfo$TFname[i]
   
-  temp = ResetToday(bonddata,group, SettlementDate,FALSE,FALSE,FALSE)
+  temp = ResetToday(bonddata,group, LastTradeDate,FALSE,FALSE,FALSE)
   
   cf1 = create_cashflows_matrix(temp[[group]])
   m1 = create_maturities_matrix_China(temp[[group]])
@@ -409,7 +409,7 @@ CalculateFVcoupon = function(bonddata,group,TFInfo,r)
   Couponnext2 = Couponnext
   
   ##将付息时间超出交割时间的部分设置为0
-  temp = matrix(data = TFInfo$settlementDate,
+  temp = matrix(data = TFInfo$LastTradeDate,
                 nr = length(TFInfo$TFname),
                 nc = length( bonddata[[group]]$ISIN),
                 byrow = FALSE)
@@ -438,7 +438,7 @@ CalculateExpectedTFPrice = function(bonddata,group,TFInfo,QuoteBond,QuoteMoneyMa
   ##计算必要数据
   bonddata = InitBondPrice(bonddata,group,QuoteBond,BondYTMBasis)
   FVcoupon = CalculateFVcoupon(bonddata,group,TFInfo,r)
-  daysToDelivery = matrix(data = TFInfo$settlementDate - as.Date(bonddata[[group]]$TODAY),
+  daysToDelivery = matrix(data = TFInfo$LastTradeDate - as.Date(bonddata[[group]]$TODAY),
                           nr = length(TFInfo$TFname),
                           nc = length(bonddata[[group]]$ISIN),
                           byrow = FALSE)
@@ -491,7 +491,7 @@ CalculateIRR = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket
   Couponnext2 = Couponnext
   
   ##将付息时间超出交割时间的部分设置为0
-  temp = matrix(data = TFInfo$settlementDate,
+  temp = matrix(data = TFInfo$LastTradeDate,
                 nr = length(TFInfo$TFname),
                 nc = length( bonddata[[group]]$ISIN),
                 byrow = FALSE)
@@ -508,7 +508,7 @@ CalculateIRR = function(bonddata,group,TFInfo,QuoteBond,QuoteTF,QuoteMoneyMarket
                          nr = length(TFInfo$TFname),
                          nc = length(bonddata[[group]]$ISIN),
                          byrow = TRUE)
-  daysToDelivery = matrix(data = TFInfo$settlementDate - as.Date(bonddata[[group]]$TODAY),
+  daysToDelivery = matrix(data = TFInfo$LastTradeDate - as.Date(bonddata[[group]]$TODAY),
                           nr = length(TFInfo$TFname),
                           nc = length(bonddata[[group]]$ISIN),
                           byrow = FALSE)

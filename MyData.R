@@ -11,7 +11,7 @@ InitMongoDb("221.133.243.54:3401","NDAPReader","Reader@Galaxy")
 ########## TF Basic Info #########################
 #TFInfo = list(
 #  TFname          = TFNames,
-#  settlementDate  = c(as.Date("2012-03-09","%Y-%m-%d"),
+#  LastTradeDate  = c(as.Date("2012-03-09","%Y-%m-%d"),
 #                      as.Date("2012-06-13","%Y-%m-%d"),
 #                      as.Date("2012-09-19","%Y-%m-%d"),
 #                      as.Date("2012-12-19","%Y-%m-%d"),
