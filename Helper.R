@@ -530,8 +530,17 @@ CalculateIRR = function(bonddata,group,TFInfo,BondYTMBasis = 0,MoneyMarketBasis 
 ##########################################################################
 ##    计算期货价格反推的债券的价格             ###########################
 
-Calculate_BondPrice_from_TFPrice = function(bonddata,group,tFInfo,quoteMoneyMarket)
+Calculate_BondPrice_from_TFPrice_repoVector = function(bonddata,group,tFInfo,quoteMoneyMarket_AllRepo)
 {
+  result <- list()
+  
+  for (i in 1:length(quoteMoneyMarket_AllRepo))
+  {
+    quoteMoneyMarket = list()
+    quoteMoneyMarket$R1M = c(quoteMoneyMarket_AllRepo[i])
+    quoteMoneyMarket$date = c(bonddata[[group]]$TODAY)
+    
+    
   ##读入行情数据
   r = quoteMoneyMarket$R1M[which(quoteMoneyMarket$date == bonddata[[group]]$TODAY)]/100
   
@@ -552,8 +561,10 @@ Calculate_BondPrice_from_TFPrice = function(bonddata,group,tFInfo,quoteMoneyMark
   
   dimnames(bondPrice) = list(tFInfo$TFname,bonddata[[group]]$ISIN)
   
-  bonddata[[group]]$expectedbondPrice = bondPrice
-  bonddata
+  result[[i]]=bondPrice
+    
+  }
+  result
 }
 
 
