@@ -561,8 +561,8 @@ Calculate_BondPrice_from_TFPrice_repoVector = function(bonddata,group,tFInfo,quo
   
   dimnames(bondPrice) = list(tFInfo$TFname,bonddata[[group]]$ISIN)
   
-  ytm_diff = (bondPrice-bonddata[[group]]$PRICE)/bonddata[[group]]$PRICE/bonddata[[group]]$MOD_DURATION*100
-  ytm = bonddata[[group]]$YTM - ytm_diff 
+  ytm_diff = (bondPrice-matrix(data = bonddata[[group]]$PRICE,nrow=3,ncol = length(bonddata[[group]]$PRICE),byrow=TRUE))/matrix(data = bonddata[[group]]$PRICE,nrow=3,ncol = length(bonddata[[group]]$PRICE),byrow=TRUE)/matrix(data = bonddata[[group]]$MOD_DURATION,nrow=3,ncol = length(bonddata[[group]]$MOD_DURATION),byrow=TRUE)*100
+  ytm = matrix(data =bonddata[[group]]$YTM,nrow=3,ncol=length(bonddata[[group]]$YTM),byrow=TRUE) - ytm_diff 
   dimnames(ytm) = list(tFInfo$TFname,bonddata[[group]]$ISIN)
         
   result[[i]]=list()
