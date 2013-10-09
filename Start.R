@@ -11,9 +11,10 @@ if(ChineseOS)
 }
 else
 {
-  source("CSharpR.R")
-  source("MongoHelper.R")
-  source("MongoDb2Data.R")
+  #source("CSharpR.R")
+  #source("MongoHelper.R")
+  #source("MongoDb2Data.R")
   source("HELPER.R")
-  source("MyData.R")
+  #source("MyData.R")
+  source("CalculateRepoRelated.R")
 }
