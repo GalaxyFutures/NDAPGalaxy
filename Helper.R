@@ -341,20 +341,21 @@ CalculateTFParam = function(bonddata,group,TFInfo,i)
 
   cf1 = create_cashflows_matrix(temp[[group]])
   m1 = create_maturities_matrix_China(temp[[group]])
-  
-  priceClean = bond_pricesClean_China(cf1,m1,rep(0.03,length(bonddata[[group]]$ISIN)),bonddata[[group]]$FREQUENCY)
   ACCRUED = cf1[1,] * (1 - m1[1,])
+  #priceClean = bond_pricesClean_China(cf1,m1,rep(0.03,length(bonddata[[group]]$ISIN)),bonddata[[group]]$FREQUENCY)
+  
   ##CF只保留4位小数，后面舍去
-  priceClean = floor(priceClean*100)
-  CF = as.numeric(priceClean/10000)
+  #priceClean = floor(priceClean*100)
+  #CF = as.numeric(priceClean/10000)
   ##ACCRUDE只保留4位小数
   ACCRUED = round(ACCRUED,4)
   
   ##非可交割券的数值没有意义，置为0
-  CF[which(bonddata[[group]]$deliverable[TFNAME,] == FALSE)] = 0
+  CF=ACCRUED
+  CF = 0
   ACCRUED[which(bonddata[[group]]$deliverable[TFNAME,] == FALSE)] = 0
   
-  result = data.frame(CF,ACCRUED,priceClean)
+  result = data.frame(CF,ACCRUED)
   result
 }
 
