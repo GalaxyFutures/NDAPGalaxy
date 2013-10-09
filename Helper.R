@@ -327,6 +327,42 @@ AddTFInfo = function(bonddata,group,TFInfo)
   
   bonddata
 }
+
+
+##########################################################################
+###############   Function: 给债券基础信息加上TF相关参数      ############
+###############             包括：是否为可交割券，CF因子(都为0)      ############
+AddTFInfo_bis = function(bonddata,group,TFInfo)
+{ 
+  bonddata[[group]]$TFname = TFInfo$TFname
+  bonddata[[group]]$TFprice = rep(100,length(TFInfo$TFname))
+  
+  bonddata = UpdateDeliverable(bonddata,group,TFInfo)
+  
+  conversionFactor = matrix(data=0,nr = length(TFInfo$TFname),nc = length(bonddata[[group]]$ISIN))
+  accruedInterest  = matrix(data=0,nr = length(TFInfo$TFname),nc = length(bonddata[[group]]$ISIN))
+  for( i in 1:length(TFInfo$TFname))
+  {
+    if(bonddata[[group]]$TODAY >= TFInfo$LastTradeDate[i])
+    {
+      conversionFactor[i,]= rep(0,length(bonddata[[group]]$ISIN))
+      accruedInterest[i,]= rep(0,length(bonddata[[group]]$ISIN))
+    }
+    else
+    {
+      temp = CalculateTFParam(bonddata,group,TFInfo,i)
+      conversionFactor[i,] = temp$CF
+      accruedInterest[i,] = temp$ACCRUED
+    }    
+  }
+  
+  dimnames(conversionFactor) = list(TFInfo$TFname,bonddata[[group]]$ISIN)
+  dimnames(accruedInterest)  = list(TFInfo$TFname,bonddata[[group]]$ISIN)
+  bonddata[[group]]$conversionFactor = 0
+  bonddata[[group]]$accruedInterest  = accruedInterest
+  
+  bonddata
+}
 ##########################################################################
 ###############   被AddTFInfo调用: 计算CF、accrued            ############
 ###############   注意这里需要bonddata包括deliverable信息     ############
