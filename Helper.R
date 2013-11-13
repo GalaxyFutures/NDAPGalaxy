@@ -1,4 +1,7 @@
 library("termstrc")
+
+helper_origin = "1970-1-1 00:00:00"
+
 #######################################################################
 ############ 中国版计算方式,不算连续复利，而是按年付息 ################
 ############ 计算收益率、价格、久期的三个函数          ################
@@ -205,7 +208,7 @@ InitGovBondInfo = function(GovBondInfo)
     date_tmp = seq(ISSUEDATE[i],by = as.character(Time_interval["forward_interval",freq==FREQUENCY[i]]), length = j+1)[j+1]
     while(seq(date_tmp,by = as.character(Time_interval["backward_interval",freq==FREQUENCY[i]]), length = j+1)[j+1]>ISSUEDATE[i])
       date_tmp=date_tmp-1
-        
+    
     while(date_tmp < MATURITYDATE[i])
     {
       CASHFLOW_CF[k+j]    = COUPONRATE[i]*100/FREQUENCY[i]
@@ -235,7 +238,7 @@ InitGovBondInfo = function(GovBondInfo)
       print(ISSUEDATE[i])
       k=k+j-1
     }
-      
+    
   }
   
   CASHFLOWS = list(ISIN=CASHFLOW_ISIN,CF=CASHFLOW_CF,DATE=CASHFLOW_DATE)
@@ -374,7 +377,7 @@ CalculateTFParam = function(bonddata,group,TFInfo,i)
   #LastTradeDate为最后交易日
   temp = bonddata
   temp = ResetToday(temp,group, LastTradeDate,FALSE,FALSE,TRUE)
-
+  
   cf1 = create_cashflows_matrix(temp[[group]])
   m1 = create_maturities_matrix_China(temp[[group]])
   ACCRUED = cf1[1,] * (1 - m1[1,])
@@ -434,11 +437,11 @@ CalculateFVcoupon = function(bonddata,group,TFInfo,r)
   
   ##将付息日期为today的部分设置为0
   Matrix_today = matrix(data = bonddata[[group]]$TODAY,
-                nr = length(TFInfo$TFname),
-                nc = length( bonddata[[group]]$ISIN),
-                byrow = FALSE)
+                        nr = length(TFInfo$TFname),
+                        nc = length( bonddata[[group]]$ISIN),
+                        byrow = FALSE)
   
-  Couponnext[which(as.Date(DateCouponnext) <= Matrix_today)] = 0
+  Couponnext[which(as.Date(DateCouponnext, origin = helper_origin) <= Matrix_today)] = 0
   
   ##按照短期利率计算付息金额的未来价值
   FVcouponNext = Couponnext*(1 + r*as.integer(temp-DateCouponnext)/365)
@@ -530,7 +533,7 @@ CalculateIRR = function(bonddata,group,TFInfo,BondYTMBasis = 0,MoneyMarketBasis 
                         nc = length( bonddata[[group]]$ISIN),
                         byrow = FALSE)
   
-  Couponnext[which(as.Date(DateCouponnext) <= Matrix_today)] = 0
+  Couponnext[which(as.Date(DateCouponnext, origin = helper_origin) <= Matrix_today)] = 0
   
   ##按照短期利率计算付息金额的未来价值
   DateCouponnextInterval = as.integer(temp-DateCouponnext)
@@ -579,35 +582,35 @@ Calculate_BondPrice_from_TFPrice_repoVector = function(bonddata,group,tFInfo,quo
     quoteMoneyMarket$date = c(bonddata[[group]]$TODAY)
     
     
-  ##读入行情数据
-  r = quoteMoneyMarket$R1M[which(quoteMoneyMarket$date == bonddata[[group]]$TODAY)]/100
-  
-  FVcoupon = CalculateFVcoupon(bonddata,group,tFInfo,r)
-  daysToDelivery = matrix(data = tFInfo$LastTradeDate - as.Date(bonddata[[group]]$TODAY),
-                          nr = length(tFInfo$TFname),
-                          nc = length(bonddata[[group]]$ISIN),
-                          byrow = FALSE)
-  
-  bondPrice = (bonddata[[group]]$TFprice * bonddata[[group]]$conversionFactor + FVcoupon + bonddata[[group]]$accruedInterest)/(1 + r*daysToDelivery/365) - 
-    matrix(data = (bonddata[[group]]$ACCRUED),
-           nr = length(tFInfo$TFname),
-           nc = length(bonddata[[group]]$ISIN),
-           byrow = TRUE)
-  
-  
-  bondPrice[which(bonddata[[group]]$deliverable == FALSE)] = 0
-  
-  dimnames(bondPrice) = list(tFInfo$TFname,bonddata[[group]]$ISIN)
-  
-  ytm_diff = (bondPrice-matrix(data = bonddata[[group]]$PRICE,nrow=length(TFInfo$TFname),ncol = length(bonddata[[group]]$PRICE),byrow=TRUE))/
+    ##读入行情数据
+    r = quoteMoneyMarket$R1M[which(quoteMoneyMarket$date == bonddata[[group]]$TODAY)]/100
+    
+    FVcoupon = CalculateFVcoupon(bonddata,group,tFInfo,r)
+    daysToDelivery = matrix(data = tFInfo$LastTradeDate - as.Date(bonddata[[group]]$TODAY),
+                            nr = length(tFInfo$TFname),
+                            nc = length(bonddata[[group]]$ISIN),
+                            byrow = FALSE)
+    
+    bondPrice = (bonddata[[group]]$TFprice * bonddata[[group]]$conversionFactor + FVcoupon + bonddata[[group]]$accruedInterest)/(1 + r*daysToDelivery/365) - 
+      matrix(data = (bonddata[[group]]$ACCRUED),
+             nr = length(tFInfo$TFname),
+             nc = length(bonddata[[group]]$ISIN),
+             byrow = TRUE)
+    
+    
+    bondPrice[which(bonddata[[group]]$deliverable == FALSE)] = 0
+    
+    dimnames(bondPrice) = list(tFInfo$TFname,bonddata[[group]]$ISIN)
+    
+    ytm_diff = (bondPrice-matrix(data = bonddata[[group]]$PRICE,nrow=length(TFInfo$TFname),ncol = length(bonddata[[group]]$PRICE),byrow=TRUE))/
       matrix(data = bonddata[[group]]$PRICE,nrow=length(TFInfo$TFname),ncol = length(bonddata[[group]]$PRICE),byrow=TRUE)/
       matrix(data = bonddata[[group]]$MOD_DURATION,nrow=length(TFInfo$TFname),ncol = length(bonddata[[group]]$MOD_DURATION),byrow=TRUE)*100
-  ytm = matrix(data =bonddata[[group]]$YTM,nrow=length(TFInfo$TFname),ncol=length(bonddata[[group]]$YTM),byrow=TRUE) - ytm_diff 
-  dimnames(ytm) = list(tFInfo$TFname,bonddata[[group]]$ISIN)
-        
-  result[[i]]=list()
-  result[[i]]$price = bondPrice
-  result[[i]]$ytm = ytm
+    ytm = matrix(data =bonddata[[group]]$YTM,nrow=length(TFInfo$TFname),ncol=length(bonddata[[group]]$YTM),byrow=TRUE) - ytm_diff 
+    dimnames(ytm) = list(tFInfo$TFname,bonddata[[group]]$ISIN)
+    
+    result[[i]]=list()
+    result[[i]]$price = bondPrice
+    result[[i]]$ytm = ytm
     
   }
   result
@@ -734,7 +737,7 @@ InitBondPrice = function(bondinfo,group,QuoteBond,BondYTMBasis = 0)
     #bondName = paste("Bond",bondinfo[[group]]$ISIN[i],sep="")
     bondName = bondinfo[[group]]$ISIN[i]
     idx      = which(QuoteBond[[bondName]]$date == bondinfo[[group]]$TODAY)
-
+    
     if(length(idx) == 1)
     {
       YTM[i] = QuoteBond[[bondName]]$YTM[idx]
@@ -755,7 +758,7 @@ InitBondPrice = function(bondinfo,group,QuoteBond,BondYTMBasis = 0)
   
   MOD_DURATION = bondinfo[[group]]$PRICE
   CONVEXITY = bondinfo[[group]]$PRICE
-    
+  
   for(i in 1:length(bondinfo[[group]]$ISIN))
   {
     couponRate = bondinfo[[group]]$COUPONRATE[i] * 100
@@ -798,13 +801,13 @@ CalculateBondPrice = function(bondinfo,group,BondYTMBasis = 0)
   m_p = create_maturities_matrix_China(bondinfo[[group]])
   
   PRICE = bond_pricesClean_China(cf_p, m_p, YTM, bondinfo[[group]]$FREQUENCY)
- 
+  
   ##将缺失数据部分设置为0
   PRICE[which(YTM==-1)] = 0
-
+  
   ##设置数据精度
   PRICE = round(PRICE,4)
-
+  
   PRICE
 }
 
