@@ -550,7 +550,7 @@ CalculateIRR = function(bonddata,group,TFInfo,BondYTMBasis = 0,MoneyMarketBasis 
                    nc = length(bonddata[[group]]$ISIN),
                    byrow = FALSE)
   TFIRR = TFPrice*bonddata[[group]]$conversionFactor + bonddata[[group]]$accruedInterest-priceDirty+Couponnext+Couponnext2
-  TFIRR = TFIRR/(priceDirty*daysToDelivery/365 + (Couponnext*DateCouponnextInterval+Couponnext2*DateCouponnext2Interval)/365)
+  TFIRR = TFIRR/(priceDirty*daysToDelivery/365 - (Couponnext*DateCouponnextInterval+Couponnext2*DateCouponnext2Interval)/365)
   
   TFIRR[which(bonddata[[group]]$deliverable == FALSE)] = 0
   TFIRR[which(daysToDelivery < 0)] = 0
