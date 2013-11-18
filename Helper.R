@@ -635,7 +635,7 @@ CalculateNetBasis = function(bonddata,group,BondYTMBasis = 0,MoneyMarketBasis = 
                 nr = length(bonddata[[group]]$TFprice),
                 nc = length(bonddata[[group]]$ISIN),
                 byrow = FALSE)
-  netBasis = expectedTFPrice - temp
+  netBasis = (expectedTFPrice - temp)*bonddata[[group]]$conversionFactor
   netBasis[which(expectedTFPrice < 10)] = 0
   netBasis[which(temp == 0)] = 0
   
