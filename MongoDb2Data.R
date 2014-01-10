@@ -12,6 +12,45 @@ InitNDAPDb =function()
   InitMongoDb("221.133.243.54:3401","NDAPReader","Reader@Galaxy")
 }
 
+CreateMongoConnection = function(arg_strAddress,arg_strUser,arg_strPassword,arg_strDb)
+{
+  connection <- mongo.create(host=arg_strAddress,username=arg_strUser,password=arg_strPassword,db=arg_strDb);
+  connection
+}
+GetTicksFromMongo = function(arg_dbConnection,arg_strContractName,arg_dtimeStart,arg_dtimeNext,arg_bRemoveId=T)
+{
+  #DbName:ticks
+  #CollectionName: IF1401.Tick
+  collection = paste("ticks",arg_strContractName,"Tick",sep=".")
+  query = mongo.bson.empty()#mongo.bson.from.list(list(name="John"))
+  sort = mongo.bson.empty()
+  fields = mongo.bson.empty()
+  limit = 1L
+  skip = 0L
+  options = 0L
+  it = mongo.find(arg_dbConnection, collection , query ,limit = 10)
+  
+  
+  lst_frm = list()
+  
+  i=1
+  while(mongo.cursor.next(it))  
+  {       
+    bsonTmp = mongo.cursor.value(it)
+    lst = mongo.bson.to.list(bsonTmp)  
+    if(arg_bRemoveId)
+      lst[["_id"]]<-NULL   
+    
+    lst[sapply(lst,is.null)]<-NaN
+    
+    
+    lst_frm[[i]] = data.frame(lst)  
+    i=i+1
+  }
+  dfrm = do.call(rbind,lst_frm)
+  
+  dfrm
+}
 
 #返回TFVarieties
 GetTFVarietiesFromMongo = function () 
