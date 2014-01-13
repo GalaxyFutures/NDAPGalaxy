@@ -17,20 +17,33 @@ CreateMongoConnection = function(arg_strAddress,arg_strUser,arg_strPassword,arg_
   connection <- mongo.create(host=arg_strAddress,username=arg_strUser,password=arg_strPassword,db=arg_strDb);
   connection
 }
-GetTicksFromMongo = function(arg_dbConnection,arg_strContractName,arg_dtimeStart,arg_dtimeNext,arg_bRemoveId=T)
+GetTicksFromMongo = function(arg_dbConnection,arg_strContractName,arg_strStartDateTime,arg_strNextDateTime, arg_nLimitCount, arg_listField =list(openPrice=1L,lastPrice=1L))
 {
+  #arg_dbConnection = CreateMongoConnection("101.95.130.222:3331","zhangguobing","zhangguobing","ticks")
   #DbName:ticks
   #CollectionName: IF1401.Tick
   collection = paste("ticks",arg_strContractName,"Tick",sep=".")
-  query = mongo.bson.empty()#mongo.bson.from.list(list(name="John"))
+  
+  lStartId = GetTicksFromDateTime( as.POSIXlt(arg_strStartDateTime))
+  lNextId = GetTicksFromDateTime( as.POSIXlt(arg_strNextDateTime))
+  buf = mongo.bson.buffer.create()
+  mongo.bson.buffer.start.object(buf,"_id")
+  mongo.bson.buffer.append(buf,"$gte", lStartId)
+  mongo.bson.buffer.append(buf,"$lt",lNextId)
+  mongo.bson.buffer.finish.object(buf)  
+  query = mongo.bson.from.buffer(buf)
+  
+
+  #test = mongo.count(arg_dbConnection,collection,query)  
+  
+  #query = mongo.bson.from.JSON('{"_id": 635227820400000002 }')
+  #query = mongo.bson.empty()
   sort = mongo.bson.empty()
   fields = mongo.bson.empty()
-  limit = 1L
+  limit = arg_nLimitCount;
   skip = 0L
   options = 0L
-  it = mongo.find(arg_dbConnection, collection , query ,limit = 10)
-  
-  
+  it = mongo.find(arg_dbConnection, collection , query ,limit = arg_nLimitCount,fields=arg_listField)  
   lst_frm = list()
   
   i=1
@@ -38,8 +51,8 @@ GetTicksFromMongo = function(arg_dbConnection,arg_strContractName,arg_dtimeStart
   {       
     bsonTmp = mongo.cursor.value(it)
     lst = mongo.bson.to.list(bsonTmp)  
-    if(arg_bRemoveId)
-      lst[["_id"]]<-NULL   
+    #if(arg_bRemoveId)
+    #  lst[["_id"]]<-NULL   
     
     lst[sapply(lst,is.null)]<-NaN
     

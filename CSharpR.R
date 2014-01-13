@@ -1,3 +1,7 @@
+#1970年的Tick(c#)
+g_lTicksOf1970 = 621355968000000000
+
+
 #把C#中DateTime的Ticks转换成时间
 GetDateFromTicks = function( arg_ticks)
 {
@@ -5,6 +9,15 @@ GetDateFromTicks = function( arg_ticks)
   as.POSIXct(seconds, origin = "01-01-01 00:00:00")
 }
 
+#arg_datetime必须是POSIXlt类型
+# date = as.Date("2010-01-01")
+# dateTime = as.POSIXlt(date)
+GetTicksFromDateTime = function( arg_datetime)
+{
+  #1970年开始的秒数
+  dtime =as.double(arg_datetime) + 8*60*60
+  dtime*10000000 + g_lTicksOf1970  
+}
 
 GetDate = function( arg_seconds )
 {
